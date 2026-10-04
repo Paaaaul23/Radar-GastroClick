@@ -357,10 +357,34 @@ table.data{width:100%;border-collapse:separate;border-spacing:0;min-width:1680px
 .mail-preview:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .mail-preview p{margin:0 0 12px}.mail-preview ul{margin:0 0 12px;padding-left:20px}.mail-preview li{margin:0 0 4px}.mail-preview a{color:var(--accent)}
 .mail-sig summary{cursor:pointer}
-.tpl{border-top:1px solid var(--line);padding:12px 0}.tpl summary{cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tpl-body{font-size:14px;line-height:1.5;min-height:260px;resize:vertical}
-.tpl-vars{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:8px 16px;margin-top:10px}.tpl-vars div{display:flex;flex-direction:column;gap:2px}
-.tpl-vars code,.tpl code{font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:5px;width:fit-content}
+.tpl-head{align-items:flex-start;flex-wrap:wrap;gap:12px}
+.tpl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:12px;margin-top:14px}
+.tpl-card{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;background:var(--surface)}
+.tpl-card-top{display:flex;gap:10px;align-items:flex-start}
+.tpl-ico{width:38px;height:38px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.tpl-name{font-weight:700;font-size:15px;line-height:1.3;overflow-wrap:anywhere;margin-bottom:4px}
+.tpl-use{font-size:12px}.tpl-use.first{background:var(--accent-soft);color:var(--accent)}.tpl-use.followup{background:var(--good-soft);color:var(--good)}
+.tpl-subj{background:var(--surface-2);border-radius:10px;padding:8px 10px;font-size:14px;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:2px}
+.tpl-snip{margin:0;line-height:1.45;overflow-wrap:anywhere}
+.tpl-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto}.tpl-actions .btn.primary{grid-column:1/-1}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
+.modal.xl{width:min(1080px,100%)}
+.te-grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.te-grid{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}.te-prev-wrap{position:sticky;top:70px;align-self:start}}
+.te-form{display:flex;flex-direction:column;gap:16px;min-width:0}
+.te-sec{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start}
+.te-n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:14px}.te-n .ico{width:16px;height:16px}
+.te-c{min-width:0;display:flex;flex-direction:column;gap:8px}.te-c h4{margin:3px 0 2px;font-size:15px}
+.te-hint{margin:0}
+.te-body{font-size:14.5px;line-height:1.55;min-height:300px;resize:vertical}
+.ins-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ins-chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 10px 4px 7px;font-size:12.5px;font-weight:600;cursor:pointer;min-height:30px}
+.ins-chip .ico{width:13px;height:13px}
+.te-tips{background:var(--surface-2);border-radius:10px;padding:10px 12px;color:var(--ink-2)}.te-tips ul{margin:6px 0 0;padding-left:18px}.te-tips li{margin:3px 0}
+.te-tips code{font-size:12.5px;background:var(--surface);padding:1px 5px;border-radius:5px}
+.te-prev{border:1px solid var(--line);border-radius:12px;overflow:hidden}.te-prev .mail-preview{border:0;border-radius:0;max-height:none}
+.te-prev-subj{display:flex;flex-direction:column;gap:2px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface-2);overflow-wrap:anywhere}
+@media (max-width:640px){.te-sec{grid-template-columns:minmax(0,1fr)}.te-n{display:none}.tpl-head .btn{width:100%}.te-body{min-height:240px}}
 .r-facts{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--ink-2)}
 .r-facts span{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow-wrap:anywhere}
 .r-facts .ico{width:14px;height:14px}
@@ -1254,51 +1278,19 @@ VIEWS.pipeline = () => {
 <script>
 /* ---------- AJUSTES ---------- */
 VIEWS.ajustes = () => {
-  const svc = S.settings.service;
-  return `<div class="page-head"><div><h1>Ajustes</h1><p>Tu servicio, estados, etiquetas y copias de seguridad.</p></div></div>
+  const sm = tplSample();
+  return `<div class="page-head"><div><h1>Ajustes</h1><p>Tus plantillas de correo, tu firma y tus datos.</p></div></div>
   <div class="settings-grid">
-    <section class="card"><h2>Tu producto o servicio</h2>
-      <p class="muted small" style="margin-top:-6px">El análisis de cada empresa se adapta a lo que configures aquí.</p>
-      <div class="field"><label for="svc-name">Nombre</label><input class="input" id="svc-name" data-svc="name" value="${esc(svc.name)}"></div>
-      <div class="field" style="margin-top:12px"><label for="svc-sum">Descripción</label><textarea class="input" id="svc-sum" data-svc="summary" rows="2">${esc(svc.summary)}</textarea></div>
-      <div class="field" style="margin-top:12px"><span class="lbl">Módulos o funcionalidades</span>
-        <div class="mod-list">${svc.modules.map((m, i) => `<span class="mod">${esc(m)}<button data-act="del-mod" data-i="${i}" aria-label="Quitar ${esc(m)}">${ico("x")}</button></span>`).join("")}</div>
-        <div class="row" style="margin-top:8px"><input class="input" id="new-mod" placeholder="Añadir módulo…" style="flex:1 1 200px"><button class="btn" data-act="add-mod">${ico("plus")}<span>Añadir</span></button></div></div>
-      <div class="grid-form" style="margin-top:12px">
-        <div class="field"><label for="svc-cnae">CNAE objetivo (prefijos)</label><input class="input" id="svc-cnae" data-svc="targetCnae" value="${esc(svc.targetCnae.join(", "))}"></div>
-        <div class="field"><label for="svc-kw">Palabras clave del sector</label><input class="input" id="svc-kw" data-svc="targetKeywords" value="${esc(svc.targetKeywords.join(", "))}"></div>
-      </div>
-      <p class="small muted" style="margin:10px 0 0">Las oportunidades se detectan por el nombre de los módulos: comandas/QR/pedidos, fichajes/planning, reservas e inventario/insumos/escandallos. Con otros módulos, la ficha propone el encaje general del servicio.</p>
+    <section class="card" id="tpl-card" style="grid-column:1/-1"><div class="card-head tpl-head"><div><h2>Plantillas de correo</h2><p class="muted small" style="margin:-6px 0 0">Cada plantilla es una forma de escribir a un local. Pulsa <b>Editar</b> para cambiar su asunto y su texto.</p></div>
+      <button class="btn primary" data-act="tpl-add">${ico("plus")}<span>Nueva plantilla</span></button></div>
+      <div class="tpl-list">${S.settings.templates.map((t, i) => { const d = renderTemplate(t, sm), snip = d.text.split("\n\n").slice(1).join(" ").replace(/\s+/g, " ").slice(0, 150);
+        return `<article class="tpl-card"><div class="tpl-card-top"><span class="tpl-ico">${ico("mail")}</span><div style="min-width:0"><div class="tpl-name">${esc(t.name)}</div><span class="pill tpl-use ${t.use}">${esc(useLabel(t.use))}</span></div></div>
+          <div class="tpl-subj"><span class="small muted">Asunto</span><div>${esc(d.subject || "(sin asunto)")}</div></div>
+          <p class="small muted tpl-snip">${esc(snip)}${snip.length >= 150 ? "…" : ""}</p>
+          <div class="tpl-actions"><button class="btn sm primary" data-act="tpl-edit" data-i="${i}">${ico("edit")}<span>Editar</span></button><button class="btn sm" data-act="tpl-dup" data-i="${i}">${ico("plus")}<span>Duplicar</span></button><button class="btn sm ghost danger" data-act="tpl-del" data-i="${i}" aria-label="Eliminar plantilla">${ico("trash")}<span>Eliminar</span></button></div></article>`; }).join("")}</div>
+      <p class="small muted" style="margin:14px 0 0">Las tarjetas muestran el asunto con los datos de <b>${esc(val(sm, "name"))}</b>${sm.id === "sample" ? " (ejemplo)" : ""}. <button class="linkbtn" data-act="tpl-reset">Restaurar plantillas originales</button></p>
     </section>
-    <section class="card" id="tpl-card" style="grid-column:1/-1"><div class="card-head"><h2>Plantillas de correo</h2><div class="row"><button class="btn sm" data-act="tpl-add">${ico("plus")}<span>Nueva plantilla</span></button><button class="btn sm ghost" data-act="tpl-reset">${ico("refresh")}<span>Restaurar originales</span></button></div></div>
-      <p class="muted small" style="margin-top:-6px">Una plantilla por cada acercamiento. Cambia el asunto y el texto como quieras: las palabras entre llaves se rellenan solas con los datos de cada local. Se guarda al salir de cada campo.</p>
-      ${S.settings.templates.map((t, i) => `<details class="tpl" data-tplid="${esc(t.id)}" ${S.tplOpen === t.id ? "open" : ""}><summary><b>${esc(t.name)}</b>${t.use !== "manual" ? ` <span class="pill" style="background:var(--accent-soft);color:var(--accent)">${t.use === "first" ? "Primer contacto" : "Seguimiento"}</span>` : ""}</summary>
-        <div class="grid-form" style="margin-top:10px"><div class="field"><label for="tp-n-${i}">Nombre del acercamiento</label><input class="input" id="tp-n-${i}" data-tpl="name" data-i="${i}" value="${esc(t.name)}"></div>
-          <div class="field"><label for="tp-u-${i}">Se usa para</label><select class="select" id="tp-u-${i}" data-tpl="use" data-i="${i}">${TPL_USES.map(([k, l]) => `<option value="${k}" ${t.use === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
-          <div class="field"><label for="tp-t-${i}">Tono de {gancho} y {beneficios}</label><select class="select" id="tp-t-${i}" data-tpl="tone" data-i="${i}"><option value="cercano" ${t.tone !== "formal" ? "selected" : ""}>Cercano (vosotros)</option><option value="formal" ${t.tone === "formal" ? "selected" : ""}>Formal (ustedes)</option></select></div></div>
-        <div class="field" style="margin-top:12px"><label for="tp-s-${i}">Asunto</label><input class="input" id="tp-s-${i}" data-tpl="subject" data-i="${i}" value="${esc(t.subject)}"></div>
-        <div class="field" style="margin-top:12px"><label for="tp-b-${i}">Mensaje</label><textarea class="input tpl-body" id="tp-b-${i}" data-tpl="body" data-i="${i}" rows="16">${esc(t.body)}</textarea></div>
-        <div class="row" style="margin-top:10px"><button class="btn sm" data-act="tpl-preview" data-i="${i}">${ico("doc")}<span>Vista previa</span></button><button class="btn sm" data-act="tpl-dup" data-i="${i}">${ico("plus")}<span>Duplicar</span></button><button class="btn sm danger" data-act="tpl-del" data-i="${i}">${ico("trash")}<span>Eliminar</span></button></div>
-      </details>`).join("")}
-      <details class="tpl"><summary><b>Campos que se rellenan solos</b></summary>
-        <div class="tpl-vars">${TPL_VARS.map(([k, l]) => `<div><code>{${k}}</code><span class="small muted">${esc(l)}</span></div>`).join("")}</div>
-        <ul class="small muted" style="margin:10px 0 0;padding-left:18px"><li>Lo que pongas entre <code>[[</code> y <code>]]</code> solo aparece si todos sus campos tienen valor. Ejemplo: <code>[[ Llamadme al {telefono}.]]</code> desaparece si no has puesto teléfono.</li><li>Deja una línea en blanco para separar párrafos. Las líneas que empiezan por <code>• </code> o <code>- </code> forman una lista.</li><li>El botón <b>Enviar correo por Gmail</b> usa la plantilla de «Primer contacto», o la de «Seguimiento» si ya le habías escrito a ese local.</li></ul>
-      </details>
-    </section>
-    <section class="card"><h2>Tu firma</h2><p class="muted small" style="margin-top:-6px">Se usa en los campos {mi_nombre}, {cargo}, {telefono}, {web}, {servicio}, {video} y {firma}.</p><div class="grid-form">${sigFields("st")}</div></section>
-    <section class="card"><div class="card-head"><h2>Estados comerciales</h2><button class="btn sm" data-act="add-status">${ico("plus")}<span>Añadir estado</span></button></div>
-      <p class="muted small" style="margin-top:-6px">La fase decide en qué paso del embudo cuenta cada estado.</p>
-      ${S.settings.statuses.map((s, i) => `<div class="st-row"><input type="color" value="${s.color}" data-st="color" data-i="${i}" aria-label="Color"><input class="input" value="${esc(s.label)}" data-st="label" data-i="${i}" aria-label="Nombre del estado">
-        <select class="select" data-st="stage" data-i="${i}" aria-label="Fase">${STAGE_OPTS.map(o => `<option value="${o.n}" ${s.stage === o.n ? "selected" : ""}>${o.label}</option>`).join("")}</select>
-        <button class="btn sm icon ghost" data-act="del-status" data-i="${i}" aria-label="Eliminar">${ico("trash")}</button></div>`).join("")}
-    </section>
-    <section class="card"><div class="card-head"><h2>Etiquetas</h2></div>
-      ${S.settings.tags.map((t, i) => `<div class="st-row" style="grid-template-columns:auto minmax(0,1fr) auto"><input type="color" value="${t.color}" data-tg="color" data-i="${i}" aria-label="Color"><input class="input" value="${esc(t.label)}" data-tg="label" data-i="${i}" aria-label="Nombre"><button class="btn sm icon ghost" data-act="del-tag" data-i="${i}" aria-label="Eliminar">${ico("trash")}</button></div>`).join("")}
-      <div class="row" style="margin-top:8px"><input class="input" id="new-tag" placeholder="Nueva etiqueta…" style="flex:1 1 200px"><button class="btn" data-act="add-tag">${ico("plus")}<span>Crear</span></button></div>
-    </section>
-    <section class="card"><h2>Búsquedas guardadas</h2>
-      ${S.settings.savedSearches.length ? S.settings.savedSearches.map((s, i) => `<div class="conn"><div style="min-width:0"><b>${esc(s.name)}</b><div class="small muted">${describeFilters(s.filters)}</div></div><div class="row"><button class="btn sm" data-act="load-search" data-id="${s.id}">Abrir</button><button class="btn sm icon ghost" data-act="del-search" data-i="${i}" aria-label="Eliminar">${ico("trash")}</button></div></div>`).join("") : `<p class="muted small">Guarda combinaciones de filtros desde la vista Empresas.</p>`}
-    </section>
+    <section class="card"><h2>Tu firma</h2><p class="muted small" style="margin-top:-6px">Aparece al final de cada correo y en los datos «Mi nombre», «Mi teléfono», etc.</p><div class="grid-form">${sigFields("st")}</div></section>
     <section class="card"><h2>Fuente de datos</h2>
       <div class="conn" style="border-top:0"><div style="min-width:0"><b>OpenStreetMap</b><div class="small muted">Bares, restaurantes, cafeterías y demás locales de las 52 provincias: nombre, sector, dirección, municipio, teléfono, email, web, redes, horario y servicios cuando están publicados. Gratis, sin clave ni registro. Datos © colaboradores de OpenStreetMap (ODbL).</div></div><span class="pill" style="background:var(--good-soft);color:var(--good)"><span class="dot"></span>Gratis</span></div>
       <div class="row" style="margin-top:6px"><button class="btn sm" data-act="diagnose">Comprobar conexión</button></div>
@@ -1467,19 +1459,27 @@ function mailBenefit(o, c, F) {
 
 /* ---------- Plantillas de correo (una por acercamiento, editables en Ajustes) ---------- */
 const TPL_VARS = [
-  ["local", "Nombre del local"], ["contacto", "Nombre de la persona de contacto o, si no hay, «equipo de [local]»"],
-  ["municipio", "Municipio del local"], ["gancho", "Frase personalizada con lo que se sabe del local (valoración, terraza, horario, antigüedad…)"],
-  ["beneficios", "Lista de 2 a 4 ventajas elegidas para ese local (va en su propio párrafo)"], ["asunto_sugerido", "Asunto automático según su mayor oportunidad"],
-  ["video", "Enlace al vídeo demo"], ["servicio", "Nombre de tu servicio"], ["mi_nombre", "Tu nombre"], ["cargo", "Tu cargo"],
-  ["telefono", "Tu teléfono"], ["web", "Tu web"], ["firma", "Tu nombre, cargo, teléfono y web, uno por línea"]
+  ["local", "Nombre del local"], ["contacto", "Persona de contacto"], ["municipio", "Municipio"],
+  ["gancho", "Frase personalizada"], ["beneficios", "Ventajas para el local"], ["asunto_sugerido", "Asunto automático"],
+  ["video", "Enlace al vídeo"], ["servicio", "Mi servicio"], ["mi_nombre", "Mi nombre"], ["cargo", "Mi cargo"],
+  ["telefono", "Mi teléfono"], ["web", "Mi web"], ["firma", "Mi firma"]
 ];
-const TPL_USES = [["first", "Primer contacto (botón Gmail)"], ["followup", "Seguimiento (si ya le escribiste)"], ["manual", "Solo al elegirla"]];
+const TPL_VAR_HELP = { contacto: "Nombre de la persona o «equipo de [local]»", gancho: "Una frase sobre el local: valoración, terraza, horario…", beneficios: "Lista de ventajas elegidas para ese local", asunto_sugerido: "Asunto según su mayor oportunidad", firma: "Tu nombre, cargo, teléfono y web" };
+const SUBJ_VARS = ["local", "municipio", "contacto", "servicio", "asunto_sugerido"];
+const TPL_USES = [
+  ["first", "Primer correo", "La usa el botón «Enviar correo por Gmail» con locales a los que aún no has escrito."],
+  ["followup", "Seguimiento", "La usa el botón «Enviar correo por Gmail» con locales a los que ya escribiste."],
+  ["manual", "Solo cuando la elijas", "No se usa sola: la eliges tú al pulsar «Revisar» antes de enviar."]
+];
+const useLabel = u => (TPL_USES.find(x => x[0] === u) || TPL_USES[2])[1];
 function defaultTemplates() {
   return [
     { id: "tpl-primero", name: "Primer contacto · cercano", use: "first", tone: "cercano", subject: "{asunto_sugerido}",
       body: `Hola, {contacto}:
 
-[[Me llamo {mi_nombre}, de {servicio}.]] {gancho}
+Me llamo {mi_nombre}, de {servicio}.
+
+{gancho}
 
 Os escribo para presentaros {servicio}, una plataforma que hemos creado pensando en la hostelería: carta digital y comandas por QR, control de sala, reservas, inventario y escandallos, fichajes y planning del equipo, y facturación preparada para VERI*FACTU, todo en un mismo sitio.
 
@@ -1487,10 +1487,12 @@ En un local como el vuestro, creo que os ayudaría sobre todo a:
 
 {beneficios}
 
-[[Os dejo un vídeo corto en el que se ve cómo funciona:
-{video}]]
+Os dejo un vídeo corto en el que se ve cómo funciona:
+{video}
 
-Si os encaja, me encantaría enseñároslo con calma: puedo pasarme por el local o hacer una videollamada de 15 minutos, cuando mejor os venga.[[ También podéis llamarme o escribirme por WhatsApp al {telefono}.]]
+Si os encaja, me encantaría enseñároslo con calma: puedo pasarme por el local o hacer una videollamada de 15 minutos, cuando mejor os venga.
+
+También podéis llamarme o escribirme por WhatsApp al {telefono}.
 
 Un saludo,
 {firma}
@@ -1499,7 +1501,9 @@ P. D.: Si no os interesa, decídmelo y no os vuelvo a escribir.` },
     { id: "tpl-formal", name: "Primer contacto · formal", use: "manual", tone: "formal", subject: "Propuesta de {servicio} para {local}",
       body: `Buenos días, {contacto}:
 
-[[Me llamo {mi_nombre}, de {servicio}.]] {gancho}
+Me llamo {mi_nombre}, de {servicio}.
+
+{gancho}
 
 Les escribo para presentarles {servicio}, una plataforma que hemos creado pensando en la hostelería: carta digital y comandas por QR, control de sala, reservas, inventario y escandallos, fichajes y planning del equipo, y facturación preparada para VERI*FACTU, todo en un mismo sitio.
 
@@ -1507,10 +1511,12 @@ En un negocio como el suyo, creo que les ayudaría especialmente a:
 
 {beneficios}
 
-[[Les dejo un breve vídeo en el que pueden ver cómo funciona:
-{video}]]
+Les dejo un breve vídeo en el que pueden ver cómo funciona:
+{video}
 
-Si les resulta de interés, será un placer mostrárselo: puedo acercarme al local o hacer una videollamada de 15 minutos cuando mejor les convenga.[[ También pueden contactarme en el {telefono}.]]
+Si les resulta de interés, será un placer mostrárselo: puedo acercarme al local o hacer una videollamada de 15 minutos cuando mejor les convenga.
+
+También pueden contactarme en el {telefono}.
 
 Atentamente,
 {firma}
@@ -1525,10 +1531,12 @@ Sé que en hostelería el tiempo va justo, así que os lo resumo. En {local} os 
 
 {beneficios}
 
-[[Aquí tenéis otra vez el vídeo, dura muy poco:
-{video}]]
+Aquí tenéis otra vez el vídeo, dura muy poco:
+{video}
 
-¿Os vendría bien que me pasara 10 minutos esta semana, en el momento más tranquilo del día, para enseñároslo en directo?[[ Si lo preferís, llamadme al {telefono}.]]
+¿Os vendría bien que me pasara 10 minutos esta semana, en el momento más tranquilo del día, para enseñároslo en directo?
+
+Si lo preferís, llamadme al {telefono}.
 
 Un saludo,
 {firma}` },
@@ -1539,8 +1547,8 @@ Muchas gracias por atenderme. Como os comenté, os resumo lo que {servicio} pued
 
 {beneficios}
 
-[[Os dejo el vídeo para que lo veáis con calma y podáis enseñárselo al resto del equipo:
-{video}]]
+Os dejo el vídeo para que lo veáis con calma y podáis enseñárselo al resto del equipo:
+{video}
 
 Si os parece, el siguiente paso sería preparar una prueba con vuestra carta y vuestras mesas para que lo veáis funcionando en vuestro propio local. ¿Qué día os viene bien?
 
@@ -1548,6 +1556,9 @@ Un saludo,
 {firma}` }
   ];
 }
+// Huella de las plantillas originales anteriores, para actualizarlas solo si no se habían tocado
+const strHash = t => { let x = 5381; for (const ch of String(t)) x = ((x * 33) ^ ch.charCodeAt(0)) >>> 0; return x.toString(36); };
+const OLD_TPL_HASH = { "tpl-primero": "1cei96r", "tpl-formal": "1vbduiq", "tpl-seguimiento": "lzoqss", "tpl-visita": "1fn8d64" };
 function mailHook(c, F) {
   const rt = val(c, "rating"), rv = val(c, "reviews"), y = ageYears(c), muni = val(c, "municipality");
   const svcs = norm(val(c, "services") || ""), hrs = val(c, "hours"), dOpen = hrs ? daysOpen(hrs) : null;
@@ -1572,8 +1583,8 @@ function mailVars(c, tone) {
     video: E.video || "", videoText: `▶ Ver la demo de ${P} en YouTube`, servicio: P, mi_nombre: E.from || "", cargo: E.role || "", telefono: E.phone || "", web: E.web || "",
     firma: [E.from, E.role ? `${cap(E.role)} · ${P}` : P, E.phone, E.web].filter(Boolean) };
 }
-// Rellena una plantilla: {campo} se sustituye; [[ … ]] solo aparece si todos sus campos tienen valor;
-// los párrafos se separan con una línea en blanco y las líneas que empiezan por "• " o "- " forman una lista.
+// Rellena una plantilla: {campo} se sustituye; un párrafo con un campo vacío no se incluye ([[ … ]] hace lo
+// mismo con un trozo de frase); los párrafos se separan con una línea en blanco y "- " al inicio forma una lista.
 function renderTemplate(tpl, c) {
   const V = mailVars(c, tpl.tone), empty = k => !(k in V) ? false : Array.isArray(V[k]) ? !V[k].length : !V[k];
   const opt = s => String(s || "").replace(/\r/g, "").replace(/\[\[([\s\S]*?)\]\]/g, (_, inner) => (inner.match(/\{(\w+)\}/g) || []).some(m => empty(m.slice(1, -1))) ? "" : inner);
@@ -1583,6 +1594,7 @@ function renderTemplate(tpl, c) {
   const html = [], text = [];
   for (const para of opt(tpl.body).replace(/\{beneficios\}/g, "\n\n{beneficios}\n\n").split(/\n\s*\n/)) {
     const p = para.trim(); if (!p) continue;
+    if ((p.match(/\{(\w+)\}/g) || []).some(m => empty(m.slice(1, -1)))) continue; // le falta un dato: fuera el párrafo
     if (p === "{beneficios}") { html.push(`<ul>${V.beneficios.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`); text.push(V.beneficios.map(x => "• " + x).join("\n")); continue; }
     const lines = p.split("\n").map(l => l.trim()).filter(l => tidy(subT(l)));
     if (!lines.length) continue;
@@ -1592,6 +1604,49 @@ function renderTemplate(tpl, c) {
   return { subject: tidy(subT(opt(tpl.subject))).replace(/\n/g, " "), html: html.join(""), text: text.join("\n\n") };
 }
 const tplById = id => S.settings.templates.find(t => t.id === id);
+function tplSample() {
+  const real = [...S.companies.values()].filter(x => !x.demo).sort((x, y) => (y.updatedAt > x.updatedAt) - (y.updatedAt < x.updatedAt))[0];
+  return real || Object.assign(newCompany({ name: "Bar Ejemplo", municipality: "Ourense", province: "Ourense", sector: "Bar", rating: 4.5, reviews: 230, employees: 6, services: "Terraza", onlineBooking: false }), { id: "sample" });
+}
+const insChips = (keys, target) => keys.map(k => `<button type="button" class="ins-chip" data-act="te-ins" data-k="${k}" data-target="${target}" title="${esc(TPL_VAR_HELP[k] || "")}">${ico("plus")}${esc(TPL_VARS.find(v => v[0] === k)[1])}</button>`).join("");
+// Editor de una plantilla (i = -1: nueva). Vista previa en vivo con un local real o de ejemplo.
+function tplEditor(i) {
+  const t = i >= 0 ? S.settings.templates[i] : { name: "Nueva plantilla", use: "manual", tone: "cercano", subject: "{servicio} para {local}", body: "Hola, {contacto}:\n\nEscribe aquí tu mensaje.\n\n{video}\n\nUn saludo,\n{firma}" };
+  S.te = { i }; const sm = tplSample();
+  const body = `<div class="te-grid"><div class="te-form">
+    <section class="te-sec"><div class="te-n">1</div><div class="te-c"><h4>Nombre y uso</h4>
+      <div class="field"><label for="te-name">Nombre de la plantilla</label><input class="input" id="te-name" value="${esc(t.name)}" placeholder="p. ej. Primer contacto"></div>
+      <div class="grid-form" style="margin-top:10px"><div class="field"><label for="te-use">¿Cuándo se usa?</label><select class="select" id="te-use">${TPL_USES.map(([k, l]) => `<option value="${k}" ${t.use === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="field"><label for="te-tone">Trato en las frases automáticas</label><select class="select" id="te-tone"><option value="cercano" ${t.tone !== "formal" ? "selected" : ""}>Cercano (vosotros)</option><option value="formal" ${t.tone === "formal" ? "selected" : ""}>Formal (ustedes)</option></select></div></div>
+      <p class="small muted te-hint" id="te-use-desc">${esc((TPL_USES.find(x => x[0] === t.use) || TPL_USES[2])[2])}</p></div></section>
+    <section class="te-sec"><div class="te-n">2</div><div class="te-c"><h4>Asunto</h4>
+      <input class="input" id="te-subj" value="${esc(t.subject)}" placeholder="Escribe el asunto">
+      <div class="ins-row"><span class="small muted">Añadir dato:</span>${insChips(SUBJ_VARS, "te-subj")}</div></div></section>
+    <section class="te-sec"><div class="te-n">3</div><div class="te-c"><h4>Texto del correo</h4>
+      <textarea class="input te-body" id="te-body" rows="14" placeholder="Escribe el mensaje">${esc(t.body)}</textarea>
+      <div class="ins-row"><span class="small muted">Añadir dato:</span>${insChips(TPL_VARS.map(v => v[0]).filter(k => k !== "asunto_sugerido"), "te-body")}</div>
+      <div class="te-tips small"><b>Cómo funciona</b><ul><li>Los botones añaden datos que <b>se rellenan solos</b> con cada local. En el texto se ven entre llaves, por ejemplo <code>{local}</code>.</li><li>Si a un local le falta un dato (por ejemplo, no hay teléfono), <b>el párrafo que lo usa no se incluye</b>.</li><li>Deja una <b>línea en blanco</b> entre párrafos. Empieza una línea con <code>- </code> para hacer una lista.</li></ul></div></div></section>
+  </div>
+  <aside class="te-prev-wrap"><section class="te-sec"><div class="te-n">${ico("check")}</div><div class="te-c"><h4>Así quedará</h4><p class="small muted" style="margin:0 0 8px">Con los datos de <b>${esc(val(sm, "name"))}</b>${sm.id === "sample" ? " (ejemplo)" : ""}.</p>
+    <div class="te-prev"><div class="te-prev-subj"><span class="small muted">Asunto</span><b id="te-prev-subj"></b></div><div class="mail-preview" id="te-prev"></div></div></div></section></aside></div>`;
+  modal(i >= 0 ? `Editar plantilla` : "Nueva plantilla", body, `<button class="btn" data-act="close-modal">Cancelar</button><button class="btn primary" data-act="te-save">${ico("save")}<span>Guardar plantilla</span></button>`, true);
+  $("#modal .modal").classList.add("xl");
+  tePreview();
+}
+function tePreview() {
+  if (!$("#te-body")) return;
+  const d = renderTemplate({ subject: $("#te-subj").value, body: $("#te-body").value, tone: $("#te-tone").value }, tplSample());
+  $("#te-prev-subj").textContent = d.subject || "(sin asunto)"; $("#te-prev").innerHTML = d.html || `<p class="muted">El correo está vacío.</p>`;
+  $("#te-use-desc").textContent = (TPL_USES.find(x => x[0] === $("#te-use").value) || TPL_USES[2])[2];
+}
+function teInsert(k, target) {
+  const el = $("#" + target); if (!el) return;
+  const tok = "{" + k + "}", st = el.selectionStart ?? el.value.length, en = el.selectionEnd ?? st, v = el.value;
+  const own = target === "te-body" && ["beneficios", "video", "firma", "gancho"].includes(k); // van mejor en su propia línea
+  const pre = own && st > 0 && v[st - 1] !== "\n" ? "\n" : "", post = own && v[en] !== "\n" ? "\n" : "";
+  el.value = v.slice(0, st) + pre + tok + post + v.slice(en); const pos = st + pre.length + tok.length + post.length;
+  el.focus(); try { el.setSelectionRange(pos, pos); } catch (_) {} tePreview();
+}
 function pickTemplate(c) {
   const T = S.settings.templates, sent = c.interactions.some(i => i.type === "Email");
   return (sent && T.find(t => t.use === "followup")) || T.find(t => t.use === "first") || T[0];
@@ -2142,16 +2197,25 @@ document.addEventListener("click", async e => {
       case "compose": return composeForm(c);
       case "mail-copy": return sendMail("copy");
       case "gmail": return gmailFor(c);
-      case "edit-tpls": S.tplOpen = $("#m-tpl")?.value || S.tplOpen; closeModal(); if (S.openId) { S.openId = null; $("#layer").innerHTML = ""; document.body.style.overflow = ""; } S.view = "ajustes"; render(); setTimeout(() => $("#tpl-card")?.scrollIntoView({ block: "start" }), 50); return;
-      case "tpl-add": { const t = { id: uid("tpl"), name: "Nueva plantilla", use: "manual", tone: "cercano", subject: "{servicio} para {local}", body: "Hola, {contacto}:\n\n{gancho}\n\nEscribe aquí tu mensaje.\n\n{beneficios}\n\n[[{video}]]\n\nUn saludo,\n{firma}" }; S.settings.templates.push(t); S.tplOpen = t.id; Store.saveSettings(); return render(); }
-      case "tpl-dup": { const o = S.settings.templates[+a.dataset.i]; const t = { ...o, id: uid("tpl"), name: o.name + " (copia)", use: "manual" }; S.settings.templates.splice(+a.dataset.i + 1, 0, t); S.tplOpen = t.id; Store.saveSettings(); return render(); }
-      case "tpl-del": { if (S.settings.templates.length <= 1) { toast("Tiene que quedar al menos una plantilla"); return; } const o = S.settings.templates.splice(+a.dataset.i, 1)[0]; if (o.use !== "manual" && !S.settings.templates.some(t => t.use === o.use)) S.settings.templates[0].use = o.use; Store.saveSettings(); toast("Plantilla eliminada"); return render(); }
+      case "edit-tpls": { const id = $("#m-tpl")?.value; closeModal(); if (S.openId) { S.openId = null; $("#layer").innerHTML = ""; document.body.style.overflow = ""; } S.view = "ajustes"; render(); window.scrollTo(0, 0); return tplEditor(Math.max(0, S.settings.templates.findIndex(t => t.id === id))); }
+      case "tpl-add": return tplEditor(-1);
+      case "tpl-edit": return tplEditor(+a.dataset.i);
+      case "te-ins": return teInsert(a.dataset.k, a.dataset.target);
+      case "te-save": {
+        const name = $("#te-name").value.trim(), subject = $("#te-subj").value.trim(), body = $("#te-body").value.replace(/\s+$/, "");
+        if (!name) { toast("Ponle un nombre a la plantilla"); $("#te-name").focus(); return; }
+        if (!body.trim()) { toast("El texto del correo está vacío"); $("#te-body").focus(); return; }
+        const T = S.settings.templates, use = $("#te-use").value, tone = $("#te-tone").value;
+        let tp = T[S.te.i]; if (!tp) { tp = { id: uid("tpl") }; T.push(tp); }
+        Object.assign(tp, { name, subject, body, use, tone });
+        if (use !== "manual") T.forEach(o => { if (o !== tp && o.use === use) o.use = "manual"; });
+        Store.saveSettings(); closeModal(); toast("Plantilla guardada"); return render();
+      }
+      case "tpl-dup": { const o = S.settings.templates[+a.dataset.i]; S.settings.templates.splice(+a.dataset.i + 1, 0, { ...o, id: uid("tpl"), name: o.name + " (copia)", use: "manual" }); Store.saveSettings(); toast("Plantilla duplicada"); return render(); }
+      case "tpl-del": { if (S.settings.templates.length <= 1) { toast("Tiene que quedar al menos una plantilla"); return; } S.teDel = +a.dataset.i; return confirmModal("Eliminar plantilla", `Se eliminará la plantilla <b>${esc(S.settings.templates[S.teDel].name)}</b>.`, "tpl-del-ok"); }
+      case "tpl-del-ok": { const o = S.settings.templates.splice(S.teDel, 1)[0]; if (o && o.use !== "manual" && !S.settings.templates.some(t => t.use === o.use)) S.settings.templates[0].use = o.use; Store.saveSettings(); closeModal(); toast("Plantilla eliminada"); return render(); }
       case "tpl-reset": return confirmModal("Restaurar plantillas", "Se sustituirán tus plantillas por las originales. Los cambios que hayas hecho se perderán.", "tpl-reset-ok");
       case "tpl-reset-ok": S.settings.templates = defaultTemplates(); Store.saveSettings(); closeModal(); toast("Plantillas restauradas"); return render();
-      case "tpl-preview": { const tp = S.settings.templates[+a.dataset.i]; const real = [...S.companies.values()].filter(x => !x.demo).sort((x, y) => (y.updatedAt > x.updatedAt) - (y.updatedAt < x.updatedAt))[0];
-        const sample = real || Object.assign(newCompany({ name: "Bar Ejemplo", municipality: "Ourense", province: "Ourense", sector: "Bar", rating: 4.5, reviews: 230, employees: 6, services: "Terraza", onlineBooking: false }), { id: "sample" });
-        const d = renderTemplate(tp, sample);
-        return modal(`Vista previa: ${tp.name}`, `<p class="small muted" style="margin:0">Con los datos de <b>${esc(val(sample, "name"))}</b>${real ? " (el último local que has tocado)" : " (local de ejemplo)"}.</p><div class="field"><span class="lbl">Asunto</span><div><b>${esc(d.subject)}</b></div></div><div class="mail-preview">${d.html}</div>`, `<button class="btn primary" data-act="close-modal">Cerrar</button>`, true); }
       case "mail-gmail": return sendMail("gmail");
       case "ig-find": return igForm(c);
       case "ig-save": { const raw = $("#ig-in").value.trim(), h = igHandle(raw); if (!h) { toast("Pega un @usuario o el enlace a su perfil de Instagram"); return; } c.f.instagram = { v: h, src: "verified", origin: "Comprobado manualmente", at: todayISO() }; Store.saveCompany(c); closeModal(); toast(`Instagram guardado: @${h}`); return renderDrawer(); }
@@ -2219,18 +2283,13 @@ document.addEventListener("change", e => {
   if (t.matches("[data-crm]")) { const c = S.companies.get(S.openId); if (!c) return; const k = t.dataset.crm; let v = t.value; if (k === "amount") v = v === "" ? "" : Math.max(0, +v); if (c.crm[k] === v) return; c.crm[k] = v; Store.saveCompany(c); toast("Guardado"); return; }
   if (t.matches("[data-svc]")) { const k = t.dataset.svc; const svc = S.settings.service; svc[k] = ["targetCnae", "targetKeywords"].includes(k) ? t.value.split(",").map(x => x.trim()).filter(Boolean) : t.value.trim(); S.settings.svcRev++; Store.saveSettings(); toast("Servicio actualizado: el análisis se ha recalculado"); return; }
   if (t.id === "m-tpl") return regenMail();
-  if (t.matches("[data-tpl]")) {
-    const tp = S.settings.templates[+t.dataset.i]; if (!tp) return; const k = t.dataset.tpl;
-    tp[k] = k === "name" ? (t.value.trim() || "Sin nombre") : t.value; S.tplOpen = tp.id;
-    if (k === "use" && t.value !== "manual") S.settings.templates.forEach(o => { if (o !== tp && o.use === t.value) o.use = "manual"; });
-    Store.saveSettings(); toast("Plantilla guardada"); if (k === "use" || k === "name") render(); return;
-  }
   if (t.matches("[data-mail]")) { S.settings.email[t.dataset.mail] = t.value.trim(); Store.saveSettings(); regenMail(); toast("Firma guardada"); return; }
   if (t.matches("[data-st]")) { const s = S.settings.statuses[+t.dataset.i]; const k = t.dataset.st; s[k] = k === "stage" ? +t.value : t.value; if (k === "label" && !s.label.trim()) s.label = "Sin nombre"; Store.saveSettings(); return; }
   if (t.matches("[data-tg]")) { const g = S.settings.tags[+t.dataset.i]; g[t.dataset.tg] = t.value || g[t.dataset.tg]; Store.saveSettings(); return; }
 });
 let qTimer;
 document.addEventListener("input", e => {
+  if (["te-subj", "te-body", "te-tone", "te-use"].includes(e.target.id)) { clearTimeout(S._teT); S._teT = setTimeout(tePreview, 120); return; }
   if (e.target.id === "rq") { clearTimeout(qTimer); const el = e.target; qTimer = setTimeout(() => { S.search.q = el.value; const pos = el.selectionStart; render(); const n = $("#rq"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } }, 200); return; }
   if (e.target.id === "q") { clearTimeout(qTimer); const el = e.target; qTimer = setTimeout(() => { applyFilterInput(el); const pos = el.selectionStart; render(); const n = $("#q"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } }, 220); }
 });
@@ -2252,6 +2311,7 @@ document.addEventListener("keydown", e => {
   S.settings.svcRev = S.settings.svcRev || 0;
   S.settings.email = { ...DEFAULT_EMAIL, ...(S.settings.email || {}) };
   if (!Array.isArray(S.settings.templates) || !S.settings.templates.length) S.settings.templates = defaultTemplates();
+  if ((S.settings.tplVer || 0) < 2) { const D = defaultTemplates(); S.settings.templates.forEach(t => { const d = D.find(x => x.id === t.id); if (d && OLD_TPL_HASH[t.id] === strHash(t.body)) t.body = d.body; }); S.settings.tplVer = 2; Store.saveSettings(); }
   S.settings.savedSearches ||= []; S.settings.tags ||= []; S.settings.statuses ||= structuredClone(DEFAULT_STATUSES);
   comps.forEach(c => { c.crm ||= { tags: [] }; c.crm.tags ||= []; c.contacts ||= []; c.interactions ||= []; c.f ||= {}; S.companies.set(c.id, c); });
   // Fichas guardadas antes de existir el campo Instagram: lo saca de "Redes sociales" si trae el enlace
