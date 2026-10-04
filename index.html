@@ -353,6 +353,10 @@ table.data{width:100%;border-collapse:separate;border-spacing:0;min-width:1680px
 .r-top{display:flex;gap:10px;align-items:flex-start}
 .r-top>div{flex:1;min-width:0}
 .r-top strong{display:block;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.mail-preview{border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;background:var(--surface);max-height:48vh;overflow:auto;font-size:14px;line-height:1.55}
+.mail-preview:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.mail-preview p{margin:0 0 12px}.mail-preview ul{margin:0 0 12px;padding-left:20px}.mail-preview li{margin:0 0 4px}.mail-preview a{color:var(--accent)}
+.mail-sig summary{cursor:pointer}
 .r-facts{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--ink-2)}
 .r-facts span{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow-wrap:anywhere}
 .r-facts .ico{width:14px;height:14px}
@@ -389,6 +393,16 @@ const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u030
 const digits = s => String(s ?? "").replace(/\D/g, "").slice(-9);
 const domainOf = s => { const t = String(s ?? "").trim().toLowerCase(); if (!t) return ""; try { return new URL(t.startsWith("http") ? t : "https://" + t).hostname.replace(/^www\./, ""); } catch { return t.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0]; } };
 const urlOf = s => { const t = String(s ?? "").trim(); if (!t) return ""; return /^https?:\/\//i.test(t) ? t : "https://" + t; };
+// Usuario de Instagram a partir de "@usuario", "usuario" o cualquier URL de su perfil
+const IG_RESERVED = new Set(["p", "reel", "reels", "tv", "explore", "stories", "accounts", "about", "developer", "legal", "direct", "share", "web"]);
+const igHandle = s => {
+  let t = String(s ?? "").trim(); if (!t) return null;
+  const m = t.match(/instagram\.com\/(?:#!\/)?([A-Za-z0-9._]+)/i);
+  if (m) t = m[1]; else if (/[/:]/.test(t)) return null;
+  t = t.replace(/^@/, "").replace(/\.+$/, "");
+  return /^[A-Za-z0-9._]{1,30}$/.test(t) && !IG_RESERVED.has(t.toLowerCase()) ? t.toLowerCase() : null;
+};
+const igUrl = h => h ? `https://www.instagram.com/${h}/` : "";
 const daysBetween = (a, b) => Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 864e5);
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 
@@ -409,7 +423,8 @@ const ICONS = {
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
   save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
   refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-  bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>', star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>', radar: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12 19 5"/>', map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>', doc: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/>', list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'
+  bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>', star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>', radar: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12 19 5"/>', map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>', doc: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/>', list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  insta: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>'
 };
 const ico = (n, cls = "") => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
 
@@ -430,7 +445,7 @@ const FIELDS = [
   { k: "rating", label: "Valoración Google", type: "number", step: "0.1" },
   { k: "reviews", label: "Nº reseñas", type: "number" },
   { k: "phone", label: "Teléfono", type: "tel" }, { k: "email", label: "Email", type: "email" },
-  { k: "web", label: "Página web", type: "url" }, { k: "social", label: "Redes sociales" }, { k: "hours", label: "Horario" }, { k: "services", label: "Servicios" }, { k: "brand", label: "Cadena / marca" },
+  { k: "web", label: "Página web", type: "url" }, { k: "instagram", label: "Instagram" }, { k: "social", label: "Redes sociales" }, { k: "hours", label: "Horario" }, { k: "services", label: "Servicios" }, { k: "brand", label: "Cadena / marca" },
   { k: "onlineBooking", label: "Reservas online", type: "bool" }
 ];
 const FIELD_BY = Object.fromEntries(FIELDS.map(f => [f.k, f]));
@@ -557,7 +572,7 @@ function scoreOf(c) {
     const n = +rt;
     add("Valoración", n >= 4.5 ? 5 : n >= 4 ? 4 : n >= 3.5 ? 3 : 2, 5, n >= 4 ? `${nf1.format(n)}★: negocio cuidado, abierto a mejorar.` : `${nf1.format(n)}★: posible margen de mejora en el servicio.`);
   } else add("Valoración", null, 5, "Sin valoración.");
-  const web = val(c, "web"), soc = val(c, "social");
+  const web = val(c, "web"), soc = val(c, "social") || val(c, "instagram");
   if (web || soc) add("Presencia digital", web && soc ? 10 : 7, 10, web && soc ? "Tiene web y redes: perfil digital activo." : web ? "Tiene web." : "Tiene redes sociales.");
   else add("Presencia digital", null, 10, "Sin datos de web ni redes.");
   const ob = val(c, "onlineBooking");
@@ -601,7 +616,7 @@ function scoreHTML(c) {
 /* ¿Por qué contactar? */
 function whyContact(c) {
   const svc = S.settings.service, sc = score(c), parts = [], opps = [];
-  const y = ageYears(c), e = val(c, "employees"), rt = val(c, "rating"), rv = val(c, "reviews"), ob = val(c, "onlineBooking"), web = val(c, "web"), soc = val(c, "social");
+  const y = ageYears(c), e = val(c, "employees"), rt = val(c, "rating"), rv = val(c, "reviews"), ob = val(c, "onlineBooking"), web = val(c, "web"), soc = val(c, "social") || val(c, "instagram");
   const sector = norm(val(c, "sector") || ""), isFood = /restaur|bar|cafet|taberna|asador|pizz|marisq|cocina|gastro|tapas|brasa/.test(sector) || String(val(c, "cnae") || "").startsWith("56");
   if (y !== null) parts.push(y < 2 ? `Negocio reciente (constituido hace ${fmtAge(y)})` : `Negocio con ${fmtAge(y)} de actividad`);
   if (e !== null) parts.push(`${srcOf(c, "employees") === "estimated" ? "aproximadamente " : ""}${e} empleados`);
@@ -725,6 +740,7 @@ function mergeExternal(target, incoming) {
     const x = incoming.f?.[f.k];
     if (!x || x.v === "" || x.v === null || x.v === undefined) continue;
     const cur = target.f[f.k];
+    if (f.k === "instagram" && cur?.src === "verified" && x.src !== "verified") continue;
     if (!cur || cur.v !== x.v || cur.src !== x.src) { target.f[f.k] = { ...x }; changed = true; }
   }
   if (incoming.ext) for (const [k, v] of Object.entries(incoming.ext)) if (v && target.ext?.[k] !== v) { target.ext = { ...(target.ext || {}), [k]: v }; changed = true; }
@@ -878,9 +894,9 @@ function exportXLSX(list) {
   const wb = XLSX.utils.book_new(); const v = (c, k) => val(c, k) ?? "";
   const num = (c, k) => val(c, k) === null ? "" : +val(c, k);
   XLSX.utils.book_append_sheet(wb, sheet(
-    ["ID", "Empresa", "CIF/NIF", "Sector", "CNAE", "Provincia", "Municipio", "Dirección", "Fecha de constitución", "Antigüedad (años)", "Empleados", "Tamaño (estimado)", "Valoración Google", "Nº reseñas", "Teléfono", "Email", "Página web", "Redes sociales", "Reservas online", "Potencial comercial", "Estado comercial", "Etiquetas", "Datos de ejemplo", "Fuentes de los datos"],
-    list.map(c => [c.id, v(c, "name"), v(c, "cif"), v(c, "sector"), v(c, "cnae") === "" ? "" : String(v(c, "cnae")), v(c, "province"), v(c, "municipality"), v(c, "address"), D(val(c, "foundedAt")) ?? "", ageYears(c) === null ? "" : Math.round(ageYears(c) * 10) / 10, num(c, "employees"), sizeOf(c) || "", num(c, "rating"), num(c, "reviews"), v(c, "phone"), v(c, "email"), v(c, "web"), v(c, "social"), obTxt(val(c, "onlineBooking")), score(c).score ?? "", stl(c), (c.crm.tags || []).map(t => tagById(t)?.label).filter(Boolean).join(", "), c.demo ? "Sí" : "No", srcTxt(c)]),
-    { text: [4, 14], link: [16], mail: [15], decimal: [9, 12] }), "Empresas");
+    ["ID", "Empresa", "CIF/NIF", "Sector", "CNAE", "Provincia", "Municipio", "Dirección", "Fecha de constitución", "Antigüedad (años)", "Empleados", "Tamaño (estimado)", "Valoración Google", "Nº reseñas", "Teléfono", "Email", "Página web", "Redes sociales", "Instagram", "Reservas online", "Potencial comercial", "Estado comercial", "Etiquetas", "Datos de ejemplo", "Fuentes de los datos"],
+    list.map(c => [c.id, v(c, "name"), v(c, "cif"), v(c, "sector"), v(c, "cnae") === "" ? "" : String(v(c, "cnae")), v(c, "province"), v(c, "municipality"), v(c, "address"), D(val(c, "foundedAt")) ?? "", ageYears(c) === null ? "" : Math.round(ageYears(c) * 10) / 10, num(c, "employees"), sizeOf(c) || "", num(c, "rating"), num(c, "reviews"), v(c, "phone"), v(c, "email"), v(c, "web"), v(c, "social"), igUrl(igHandle(val(c, "instagram"))), obTxt(val(c, "onlineBooking")), score(c).score ?? "", stl(c), (c.crm.tags || []).map(t => tagById(t)?.label).filter(Boolean).join(", "), c.demo ? "Sí" : "No", srcTxt(c)]),
+    { text: [4, 14], link: [16, 18], mail: [15], decimal: [9, 12] }), "Empresas");
   const contacts = []; list.forEach(c => { (c.contacts || []).forEach(k => contacts.push([c.id, v(c, "name"), k.name, k.role, k.phone, k.email])); if (c.crm.contactPerson && !(c.contacts || []).some(k => k.name === c.crm.contactPerson)) contacts.push([c.id, v(c, "name"), c.crm.contactPerson, "Persona de contacto (CRM)", "", ""]); });
   XLSX.utils.book_append_sheet(wb, sheet(["ID empresa", "Empresa", "Nombre", "Cargo", "Teléfono", "Email"], contacts, { text: [4], mail: [5] }), "Contactos");
   const inter = []; list.forEach(c => (c.interactions || []).slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach(i => inter.push([c.id, v(c, "name"), D(i.date), i.type, i.text])));
@@ -900,7 +916,7 @@ function exportXLSX(list) {
 }
 
 /* ============ Importación ============ */
-const HEADER_MAP = { "empresa": "name", "nombre": "name", "cif nif": "cif", "cif": "cif", "nif": "cif", "sector": "sector", "cnae": "cnae", "provincia": "province", "municipio": "municipality", "direccion": "address", "fecha de constitucion": "foundedAt", "empleados": "employees", "valoracion google": "rating", "valoracion": "rating", "n resenas": "reviews", "no resenas": "reviews", "resenas": "reviews", "telefono": "phone", "email": "email", "pagina web": "web", "web": "web", "redes sociales": "social", "reservas online": "onlineBooking" };
+const HEADER_MAP = { "empresa": "name", "nombre": "name", "cif nif": "cif", "cif": "cif", "nif": "cif", "sector": "sector", "cnae": "cnae", "provincia": "province", "municipio": "municipality", "direccion": "address", "fecha de constitucion": "foundedAt", "empleados": "employees", "valoracion google": "rating", "valoracion": "rating", "n resenas": "reviews", "no resenas": "reviews", "resenas": "reviews", "telefono": "phone", "email": "email", "pagina web": "web", "web": "web", "redes sociales": "social", "instagram": "instagram", "reservas online": "onlineBooking" };
 function importFile(file) {
   const r = new FileReader();
   if (/\.json$/i.test(file.name)) {
@@ -1129,6 +1145,7 @@ function cellVal(c, k) {
   const v = val(c, k);
   if (k === "phone") return v ? `<a href="tel:${esc(v)}" data-stop>${esc(v)}</a>` : NA;
   if (k === "email") return v ? `<a href="mailto:${esc(v)}" data-stop class="trunc">${esc(v)}</a>` : NA;
+  if (k === "instagram") { const h = igHandle(v); return h ? `<a href="${esc(igUrl(h))}" target="_blank" rel="noopener" data-stop class="trunc">@${esc(h)}</a>` : (v ? esc(v) : NA); }
   if (k === "web") return v ? `<a href="${esc(urlOf(v))}" target="_blank" rel="noopener" data-stop class="trunc">${esc(domainOf(v))}</a>` : NA;
   if (k === "rating") return v !== null ? `${nf1.format(v)}★` : NA;
   if (k === "reviews" || k === "employees") return v !== null ? nf.format(v) + (srcOf(c, k) === "estimated" ? " <span class='src estimated' title='Estimado'>Est.</span>" : "") : NA;
@@ -1299,6 +1316,8 @@ function renderDrawer() {
         ${val(c, "phone") ? `<a class="btn sm" href="tel:${esc(val(c, "phone"))}">${ico("phone")}<span>Llamar</span></a>` : ""}
         ${val(c, "email") ? `<a class="btn sm" href="mailto:${esc(val(c, "email"))}">${ico("mail")}<span>Email</span></a>` : ""}
         ${val(c, "web") ? `<a class="btn sm" href="${esc(urlOf(val(c, "web")))}" target="_blank" rel="noopener">${ico("globe")}<span>Web</span></a>` : ""}
+        ${igHandle(val(c, "instagram")) ? `<a class="btn sm" href="${esc(igUrl(igHandle(val(c, "instagram"))))}" target="_blank" rel="noopener">${ico("insta")}<span>Instagram</span></a>` : ""}
+        <button class="btn sm primary" data-act="compose" data-id="${c.id}">${ico("mail")}<span>Redactar correo</span></button>
         <button class="btn sm" data-act="done" data-id="${c.id}">${ico("check")}<span>Registrar contacto</span></button></div>
       <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${S.tab === k}" data-tab="${k}">${l}</button>`).join("")}</div></div>
     <div class="d-body">${c.demo ? `<div class="demo-flag">Empresa ficticia de ejemplo. Sus datos no son reales.</div>` : ""}${TABS[S.tab](c)}</div></aside>`;
@@ -1336,7 +1355,7 @@ TABS.datos = c => {
       ${row("Dirección", "address")}${row("Municipio", "municipality")}${row("Provincia", "province")}${row("Teléfono", "phone")}${row("Email", "email")}${row("Página web", "web")}
     </div></section>
     <section class="card"><h3>Presencia digital</h3><div class="kv">
-      ${row("Valoración Google", "rating")}${row("Número de reseñas", "reviews")}${row("Redes sociales", "social")}${row("Horario", "hours")}${row("Servicios", "services")}${val(c, "brand") ? row("Cadena / marca", "brand") : ""}
+      ${row("Valoración Google", "rating")}${row("Número de reseñas", "reviews")}${row("Instagram", "instagram", (igHandle(val(c, "instagram")) ? cellVal(c, "instagram") : NA) + ` <button class="btn sm ghost" data-act="ig-find">${ico("search")}<span>${val(c, "instagram") ? "Cambiar" : "Buscar su Instagram"}</span></button>`)}${row("Redes sociales", "social")}${row("Horario", "hours")}${row("Servicios", "services")}${val(c, "brand") ? row("Cadena / marca", "brand") : ""}
       ${row("Reservas online", "onlineBooking", ob === null ? NA : (ob === true || ob === "true") ? "Sí, detectadas" : "No detectadas")}
     </div></section>
     ${c.ext?.osmUrl || c.ext?.mapsUrl || c.ext?.bormeUrl ? `<div class="row">${c.ext.osmUrl ? `<a class="btn sm" href="${esc(c.ext.osmUrl)}" target="_blank" rel="noopener">${ico("map")}<span>Ver en el mapa</span></a>` : ""}${c.ext.mapsUrl ? `<a class="btn sm" href="${esc(c.ext.mapsUrl)}" target="_blank" rel="noopener">${ico("map")}<span>Ver en Google Maps</span></a>` : ""}${c.ext.bormeUrl ? `<a class="btn sm" href="${esc(c.ext.bormeUrl)}" target="_blank" rel="noopener">${ico("doc")}<span>Ver publicación en el BORME</span></a>` : ""}</div>` : ""}
@@ -1406,6 +1425,135 @@ function doneForm(c) {
   modal("Registrar contacto", body, `<button class="btn" data-act="close-modal">Cancelar</button><button class="btn primary" data-act="save-done" data-id="${c.id}">${ico("check")}<span>Guardar y programar</span></button>`);
 }
 function toast(msg) { $(".toast")?.remove(); const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3200); }
+</script>
+<script>
+/* ============ CORREO PERSONALIZADO para presentar el servicio ============ */
+const DEFAULT_EMAIL = { from: "", role: "", phone: "", web: "", product: "GastroClick", video: "https://www.youtube.com/watch?v=zkvKKc-Fkrg" };
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+const recipientsOf = c => [...new Set([val(c, "email"), ...c.contacts.map(k => k.email)].map(x => String(x || "").trim()).filter(Boolean))];
+
+// Beneficio concreto de GastroClick para cada oportunidad detectada en la ficha
+function mailBenefit(o, c, F) {
+  const w = norm(o.what), m = norm(o.mod) + " " + w, e = val(c, "employees"), ob = val(c, "onlineBooking");
+  if (/domicilio|llevar/.test(w)) return { k: "pedidos", t: "Tener todos los pedidos (sala, para llevar y a domicilio) en una sola pantalla." };
+  if (/comand|qr/.test(m)) return { k: "qr", t: `Tomar comandas por QR desde la mesa${w.includes("terraza") ? " y la terraza" : ""}: el cliente ve la carta con alérgenos y pide desde el móvil, y el pedido llega directo a barra y cocina.` };
+  if (/fich|planning|turno/.test(m)) return { k: "equipo", t: `Llevar los fichajes (el registro horario obligatorio) y el planning de turnos${e !== null && +e >= 3 ? ` de un equipo de ${e} personas` : ""} sin papeles ni hojas de cálculo.` };
+  if (/reserv/.test(m)) return { k: "reservas", t: ob === true || ob === "true" ? `Reunir las reservas que ya ${F ? "reciben" : "recibís"} online con la sala y el equipo en un único sistema.` : "Recibir reservas directas sin depender del teléfono, conectadas con el plano de sala." };
+  if (/inventar|insumo|escandall|stock/.test(m)) return { k: "coste", t: "Controlar inventario y escandallos para saber el coste real de cada plato y reducir mermas." };
+  return { k: w, t: cap(o.what) + "." };
+}
+
+function emailDraft(c, tone) {
+  const E = S.settings.email, P = E.product || "GastroClick", F = tone === "formal", name = val(c, "name");
+  const person = String(c.crm.contactPerson || c.contacts.find(k => k.name)?.name || "").trim().split(/\s+/)[0];
+  const rt = val(c, "rating"), rv = val(c, "reviews"), y = ageYears(c), muni = val(c, "municipality");
+  const svcs = norm(val(c, "services") || ""), hrs = val(c, "hours"), dOpen = hrs ? daysOpen(hrs) : null;
+  const B = [];
+  B.push({ p: F ? (person ? `Buenos días, ${person}:` : `Estimado equipo de ${name}:`) : (person ? `Hola, ${person}:` : `Hola, equipo de ${name}:`) });
+
+  // Gancho: una sola frase basada en lo que sabemos del local
+  let hook;
+  if (rt !== null && +rt >= 4.3 && rv !== null && +rv >= 50) hook = F ? `He visto que cuentan con un ${nf1.format(rt)}★ y ${nf.format(rv)} reseñas en Google; se nota el cuidado que ponen en el servicio.` : `He visto que tenéis un ${nf1.format(rt)}★ con ${nf.format(rv)} reseñas en Google: se nota que cuidáis mucho el servicio.`;
+  else if (y !== null && y < 1.5) hook = F ? "Sé que su negocio lleva poco tiempo en marcha, y es justo al principio cuando más se agradece tener la gestión ordenada desde el primer día." : "Sé que lleváis poco tiempo en marcha, y justo al principio es cuando más se agradece tener la gestión ordenada desde el primer día.";
+  else if (svcs.includes("terraza")) hook = F ? `Me fijé en que disponen de terraza${muni ? ` en ${muni}` : ""}, y en las horas punta es donde más se nota cada viaje del camarero.` : `Me fijé en que tenéis terraza${muni ? ` en ${muni}` : ""}, y en las horas punta es donde más se nota cada viaje del camarero.`;
+  else if (dOpen !== null && dOpen >= 6) hook = F ? `Abren ${dOpen === 7 ? "todos los días" : "seis días a la semana"}, así que imagino que cuadrar turnos y pedidos no es poca cosa.` : `Abrís ${dOpen === 7 ? "todos los días" : "seis días a la semana"}, así que imagino que cuadrar turnos y pedidos no es poca cosa.`;
+  else if (muni) hook = F ? `Estoy contactando con locales de hostelería de ${muni} y el suyo me llamó la atención.` : `Estoy contactando con locales de hostelería de ${muni} y el vuestro me llamó la atención.`;
+  const me = E.from ? `Me llamo ${E.from}${E.role ? `, ${E.role} de ${P}` : `, de ${P}`}.` : "";
+  B.push({ p: [me, hook].filter(Boolean).join(" ") || (F ? "Me pongo en contacto con ustedes porque trabajo con locales de hostelería." : "Os escribo porque trabajo con locales de hostelería como el vuestro.") });
+
+  B.push({ p: `${F ? "Les escribo para presentarles" : "Os escribo para presentaros"} ${P}, una plataforma que hemos creado pensando en la hostelería: carta digital y comandas por QR, control de sala, reservas, inventario y escandallos, fichajes y planning del equipo, y facturación preparada para VERI*FACTU, todo en un mismo sitio.` });
+
+  const items = [], seen = new Set();
+  for (const o of whyContact(c).opps) { const b = mailBenefit(o, c, F); if (!seen.has(b.k)) { seen.add(b.k); items.push(b.t); } }
+  if (!items.length) items.push(mailBenefit({ mod: "qr", what: "comandas por qr" }, c, F).t, mailBenefit({ mod: "fichajes", what: "fichajes" }, c, F).t);
+  items.splice(3);
+  items.push(F ? "Emitir sus facturas cumpliendo VERI*FACTU, que será obligatorio en 2027, sin cambiar de programa." : "Facturar cumpliendo VERI*FACTU, que será obligatorio en 2027, sin cambiar de programa.");
+  B.push({ p: F ? "En un negocio como el suyo, creo que les ayudaría especialmente a:" : "En un local como el vuestro, creo que os ayudaría sobre todo a:" });
+  B.push({ ul: items });
+
+  if (E.video) B.push({ link: { pre: F ? "Les dejo un breve vídeo en el que pueden ver cómo funciona:" : "Os dejo un vídeo corto en el que se ve cómo funciona:", text: `▶ Ver la demo de ${P} en YouTube`, url: E.video } });
+  B.push({ p: F ? `Si les resulta de interés, será un placer mostrárselo: puedo acercarme al local o hacer una videollamada de 15 minutos cuando mejor les convenga.${E.phone ? ` También pueden contactarme en el ${E.phone}.` : ""}` : `Si os encaja, me encantaría enseñároslo con calma: puedo pasarme por el local o hacer una videollamada de 15 minutos, cuando mejor os venga.${E.phone ? ` También podéis llamarme o escribirme por WhatsApp al ${E.phone}.` : ""}` });
+  B.push({ sig: [F ? "Atentamente," : "Un saludo,", E.from, E.role ? `${cap(E.role)} · ${P}` : P, E.phone, E.web].filter(Boolean) });
+  B.push({ small: F ? "Si no desean recibir más correos, basta con que me lo indiquen y no volveré a escribirles." : "P. D.: Si no os interesa, decídmelo y no os vuelvo a escribir." });
+
+  const top = items[0] ? mailBenefit(whyContact(c).opps[0] || { mod: "qr", what: "qr" }, c, F).k : "";
+  const subject = F ? `Propuesta de ${P} para ${name}` : ({ qr: `Comandas por QR para ${name}`, equipo: `Fichajes y turnos de ${name}, sin papeles`, reservas: `Reservas y sala de ${name} en un solo sitio`, coste: `El coste real de cada plato en ${name}`, pedidos: `Todos los pedidos de ${name} en una pantalla` })[top] || `Una idea para ${name}`;
+  return { subject, blocks: B };
+}
+function draftHTML(blocks) {
+  return blocks.map(b => b.p ? `<p>${esc(b.p)}</p>`
+    : b.ul ? `<ul>${b.ul.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`
+    : b.link ? `<p>${esc(b.link.pre)}<br><a href="${esc(b.link.url)}" target="_blank" rel="noopener"><b>${esc(b.link.text)}</b></a></p>`
+    : b.sig ? `<p>${b.sig.map(esc).join("<br>")}</p>`
+    : `<p><small style="color:#6b7280">${esc(b.small)}</small></p>`).join("");
+}
+// Texto plano del cuerpo editado (los enlaces se escriben como "texto: url")
+function nodeText(n) {
+  if (n.nodeType === 3) return n.nodeValue.replace(/\s+/g, " ");
+  if (n.nodeType !== 1) return "";
+  const tag = n.tagName, inner = () => [...n.childNodes].map(nodeText).join("");
+  if (tag === "BR") return "\n";
+  if (tag === "A") return `${n.textContent.trim()}: ${n.getAttribute("href")}`;
+  if (tag === "LI") return "• " + inner().trim() + "\n";
+  if (tag === "P" || tag === "DIV" || tag === "UL" || tag === "OL") return inner().replace(/^ +| +$/gm, "").trim() + "\n\n";
+  return inner();
+}
+const mailText = el => nodeText(el).replace(/\n{3,}/g, "\n\n").trim();
+const mailHTML = el => `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#1f2937">${el.innerHTML.replace(/<p>/g, '<p style="margin:0 0 12px">').replace(/<a /g, '<a style="color:#2350F5" ')}</div>`;
+
+function composeForm(c, tone = "cercano") {
+  S.mail = { id: c.id, logged: false };
+  const tos = recipientsOf(c), d = emailDraft(c, tone), E = S.settings.email;
+  const body = `${!E.from ? `<div class="notice warn">${ico("info")}<div>Añade tu nombre y teléfono en <b>Tu firma</b> (abajo) para que el correo salga firmado.</div></div>` : ""}
+    <div class="grid-form"><div class="field"><label for="m-to">Para</label><input class="input" id="m-to" type="email" list="m-tos" value="${esc(tos[0] || "")}" placeholder="${tos.length ? "" : "Sin email público: escríbelo aquí"}"><datalist id="m-tos">${tos.map(t => `<option value="${esc(t)}">`).join("")}</datalist></div>
+    <div class="field"><label for="m-tone">Tono</label><select class="select" id="m-tone"><option value="cercano" ${tone === "cercano" ? "selected" : ""}>Cercano (vosotros)</option><option value="formal" ${tone === "formal" ? "selected" : ""}>Formal (ustedes)</option></select></div></div>
+    <div class="field"><label for="m-subj">Asunto</label><input class="input" id="m-subj" value="${esc(d.subject)}"></div>
+    <div class="field"><span class="lbl">Mensaje <span class="muted small" style="font-weight:400">· puedes editarlo aquí mismo</span></span><div class="mail-preview" id="m-body" contenteditable="true" spellcheck="true">${draftHTML(d.blocks)}</div></div>
+    <p class="small muted" style="margin:0">Gmail y la app de correo no aceptan hipervínculos en un correo abierto desde otra página. Por eso, al pulsar un botón el mensaje se copia con el enlace al vídeo como hipervínculo: solo tienes que pegarlo (Ctrl+V) en el cuerpo del correo.</p>
+    <label class="row small" style="gap:8px"><input type="checkbox" id="m-log" checked> Registrar el envío en el historial y programar seguimiento en 4 días</label>
+    <details class="mail-sig" ${!E.from ? "open" : ""}><summary><b>Tu firma</b> <span class="muted small">(se guarda para todos los correos)</span></summary>
+      <div class="grid-form" style="margin-top:10px">${[["from", "Tu nombre", "p. ej. Paul Pérez"], ["role", "Cargo", "p. ej. fundador"], ["phone", "Teléfono", "p. ej. 600 000 000"], ["web", "Web", "p. ej. gastroclick.es"], ["product", "Nombre del servicio", "GastroClick"], ["video", "Enlace al vídeo demo", "https://youtube.com/…"]].map(([k, l, ph]) => `<div class="field"><label for="ms-${k}">${l}</label><input class="input" id="ms-${k}" data-mail="${k}" value="${esc(E[k] || "")}" placeholder="${esc(ph)}"></div>`).join("")}</div></details>`;
+  modal(`Correo para ${val(c, "name")}`, body, `<button class="btn" data-act="mail-copy">${ico("doc")}<span>Copiar</span></button><button class="btn" data-act="mail-app">${ico("mail")}<span>Copiar y abrir app de correo</span></button><button class="btn primary" data-act="mail-gmail">${ico("mail")}<span>Copiar y abrir Gmail</span></button>`, true);
+}
+function regenMail() {
+  const c = S.companies.get(S.mail?.id); if (!c || !$("#m-body")) return;
+  const d = emailDraft(c, $("#m-tone").value); $("#m-subj").value = d.subject; $("#m-body").innerHTML = draftHTML(d.blocks);
+}
+async function sendMail(how) {
+  const c = S.companies.get(S.mail?.id), el = $("#m-body"); if (!c || !el) return;
+  const to = $("#m-to").value.trim(), subj = $("#m-subj").value.trim(), html = mailHTML(el), text = mailText(el);
+  // El portapapeles se escribe antes de abrir otra ventana, mientras la página aún tiene el foco
+  let copied;
+  try { copied = navigator.clipboard && window.ClipboardItem ? navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([text], { type: "text/plain" }) })]) : Promise.reject(); }
+  catch (_) { copied = Promise.reject(); }
+  if (how === "gmail") window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subj)}`, "_blank", "noopener");
+  if (how === "app") location.href = `mailto:${encodeURIComponent(to).replace(/%40/g, "@")}?subject=${encodeURIComponent(subj)}`;
+  let ok = await copied.then(() => true, () => false);
+  if (!ok) { // Respaldo: copia la selección del cuerpo con su formato
+    try { const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); ok = document.execCommand("copy"); sel.removeAllRanges(); } catch (_) {}
+  }
+  toast(ok ? (how === "copy" ? "Correo copiado con el enlace al vídeo" : "Correo copiado: pégalo en el cuerpo con Ctrl+V") : "No se pudo copiar: selecciona el texto y cópialo a mano");
+  if (how !== "copy" && $("#m-log")?.checked && !S.mail.logged) {
+    S.mail.logged = true; const T = todayISO();
+    c.interactions.push({ id: uid("i"), date: T, type: "Email", text: `Correo de presentación de ${S.settings.email.product || "GastroClick"} enviado${to ? " a " + to : ""}: "${subj}"` });
+    c.crm.lastContact = T; c.crm.firstContact ||= T; c.crm.channel = "Email";
+    if (!c.crm.nextActionDate || c.crm.nextActionDate < T) { c.crm.nextAction = "Seguimiento del correo de presentación"; c.crm.nextActionDate = addDays(T, 4); }
+    if (!c.crm.status || stageOf(c) === 0) setStatus(c, "contactado"); else Store.saveCompany(c);
+    renderDrawer();
+  }
+}
+
+/* ---------- Instagram del local ---------- */
+function igForm(c) {
+  const name = val(c, "name"), muni = val(c, "municipality") || val(c, "province") || "", web = val(c, "web"), cur = igHandle(val(c, "instagram"));
+  const q = encodeURIComponent(`site:instagram.com "${name}" ${muni}`.trim());
+  const body = `<div class="notice">${ico("info")}<div>Instagram no deja buscar perfiles desde otras webs sin su API oficial, así que la app no puede confirmarlo sola. Lo que sí trae automáticamente es el Instagram que el propio local publica en su ficha de OpenStreetMap. Si no aparece, búscalo en un clic y pégalo aquí.</div></div>
+    <div class="row"><a class="btn sm" href="https://www.google.com/search?q=${q}" target="_blank" rel="noopener">${ico("search")}<span>Buscar en Google</span></a>${web ? `<a class="btn sm" href="${esc(urlOf(web))}" target="_blank" rel="noopener">${ico("globe")}<span>Mirar en su web</span></a>` : ""}${cur ? `<a class="btn sm" href="${esc(igUrl(cur))}" target="_blank" rel="noopener">${ico("insta")}<span>Abrir @${esc(cur)}</span></a>` : ""}</div>
+    <div><b class="small">Cómo saber que la cuenta es realmente suya</b>
+      <ul class="small" style="margin:6px 0 0;padding-left:18px;color:var(--ink-2)"><li>La biografía enlaza a su web${web ? ` (${esc(domainOf(web))})` : ""} o muestra su mismo teléfono o dirección.</li><li>Las fotos son del mismo local: fachada, sala, carta, equipo.</li><li>Su web enlaza a esa cuenta (suele estar en el pie de página).</li><li>Descarta cuentas de fans, guías gastronómicas y locales con el mismo nombre en otra ciudad.</li></ul></div>
+    <div class="field"><label for="ig-in">Perfil de Instagram</label><input class="input" id="ig-in" value="${cur ? "@" + esc(cur) : ""}" placeholder="@usuario o https://instagram.com/usuario"></div>`;
+  modal("Instagram del local", body, `${cur ? `<button class="btn danger" data-act="ig-del">Quitar</button>` : ""}<button class="btn" data-act="close-modal">Cancelar</button><button class="btn primary" data-act="ig-save">${ico("check")}<span>Guardar como comprobado</span></button>`);
+}
 </script>
 <script>
 /* ============ BUSCAR: OpenStreetMap directamente desde el navegador (gratis, sin clave) ============ */
@@ -1530,7 +1678,9 @@ function osmToResult(el, municipality, province) {
     name: t.name, address: [street, t["addr:postcode"]].filter(Boolean).join(", ") || null,
     municipality: municipality || t["addr:city"] || null, province,
     phone: first(t.phone || t["contact:phone"] || t["contact:mobile"] || t.mobile), email: first(t.email || t["contact:email"]),
-    web: first(t.website || t["contact:website"] || t.url),
+    web: (w => igHandle(w) ? null : w)(first(t.website || t["contact:website"] || t.url)),
+    // Instagram publicado en la ficha del propio local (o puesto como su web)
+    instagram: igHandle(first(t["contact:instagram"] || t.instagram)) || igHandle(first(t.website || t["contact:website"] || t.url)),
     social: [t["contact:instagram"] || t.instagram, t["contact:facebook"] || t.facebook, t["contact:tiktok"]].filter(Boolean).join(", ") || null,
     sector: (KIND[kind] || "Negocio") + (cuisine.length ? " · " + cuisine.slice(0, 2).join(", ") : ""), kind: KIND[kind] || "Otro",
     hours: t.opening_hours || null, services: services.join(", ") || null, brand: t.brand || null,
@@ -1586,7 +1736,7 @@ async function assignMunicipalities(provName, list) {
 const rKey = r => r.osmId;
 function resultToCompany(r) {
   const T = todayISO(); const c = { f: {}, ext: { osmId: r.osmId, osmUrl: r.osmUrl } };
-  for (const [k, v] of Object.entries({ name: r.name, address: r.address, municipality: r.municipality, province: r.province, phone: r.phone, email: r.email, web: r.web, social: r.social, sector: r.sector, hours: r.hours, services: r.services, brand: r.brand }))
+  for (const [k, v] of Object.entries({ name: r.name, address: r.address, municipality: r.municipality, province: r.province, phone: r.phone, email: r.email, web: r.web, instagram: r.instagram, social: r.social, sector: r.sector, hours: r.hours, services: r.services, brand: r.brand }))
     if (v !== null && v !== undefined && v !== "") c.f[k] = { v, src: "api", origin: "OpenStreetMap", at: T };
   return c;
 }
@@ -1674,7 +1824,7 @@ function resultCard({ r, dup, sc }) {
       <div><strong>${esc(r.name)}</strong><span class="small muted">${esc([r.address, r.municipality].filter(Boolean).join(" · ")) || "Sin dirección publicada"}</span></div>
       ${s !== null ? `<span class="score s-${scoreCls(s)}" title="Encaje con ${esc(S.settings.service.name)}" style="min-width:auto"><span class="score-bar" style="width:40px"><i class="bg-${scoreCls(s)}" style="width:${s}%"></i></span>${s}</span>` : ""}</div>
     <div class="row" style="gap:6px"><span class="pill">${esc(r.sector)}</span>${r.brand ? `<span class="pill" style="background:var(--warm-soft);color:var(--warm)">Cadena: ${esc(r.brand)}</span>` : ""}${r.services ? `<span class="pill">${esc(r.services)}</span>` : ""}</div>
-    <div class="r-facts">${r.phone ? `<span>${ico("phone")}<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></span>` : `<span class="na">Sin teléfono publicado</span>`}${r.email ? `<span>${ico("mail")}<a href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : ""}${r.web ? `<span>${ico("globe")}<a href="${esc(urlOf(r.web))}" target="_blank" rel="noopener">${esc(domainOf(r.web))}</a></span>` : ""}${r.social ? `<span>Redes sociales</span>` : ""}</div>
+    <div class="r-facts">${r.phone ? `<span>${ico("phone")}<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></span>` : `<span class="na">Sin teléfono publicado</span>`}${r.email ? `<span>${ico("mail")}<a href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : ""}${r.web ? `<span>${ico("globe")}<a href="${esc(urlOf(r.web))}" target="_blank" rel="noopener">${esc(domainOf(r.web))}</a></span>` : ""}${r.instagram ? `<span><a href="${esc(igUrl(r.instagram))}" target="_blank" rel="noopener">@${esc(r.instagram)}</a> (Instagram)</span>` : r.social ? `<span>Redes sociales</span>` : ""}</div>
     ${sc.top ? `<div class="small" style="color:var(--ink-2)"><b style="color:var(--ink)">Oportunidad:</b> ${esc(sc.top)}.</div>` : ""}
     <div class="row" style="justify-content:space-between">${dup ? `<button class="btn sm" data-open="${dup.id}">Ya en tu base: abrir</button>` : `<span class="small muted">${r.hours ? "Horario publicado" : ""}</span>`}<span class="row" style="gap:12px"><a class="small" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([r.name, r.address, r.municipality || r.province].filter(Boolean).join(", "))}" target="_blank" rel="noopener" title="Abre la búsqueda en Google Maps para ver teléfono, reseñas y fotos">Google Maps</a><a class="small" href="${esc(r.osmUrl)}" target="_blank" rel="noopener">Mapa</a></span></div>
   </article>`;
@@ -1841,6 +1991,13 @@ document.addEventListener("click", async e => {
       case "delete-company-ok": closeModal(); Store.deleteCompany(S.openId); toast("Empresa eliminada"); return closeDrawer();
       case "refresh-api": return refreshFromApi(c);
       case "done": return doneForm(c);
+      case "compose": return composeForm(c);
+      case "mail-copy": return sendMail("copy");
+      case "mail-app": return sendMail("app");
+      case "mail-gmail": return sendMail("gmail");
+      case "ig-find": return igForm(c);
+      case "ig-save": { const raw = $("#ig-in").value.trim(), h = igHandle(raw); if (!h) { toast("Pega un @usuario o el enlace a su perfil de Instagram"); return; } c.f.instagram = { v: h, src: "verified", origin: "Comprobado manualmente", at: todayISO() }; Store.saveCompany(c); closeModal(); toast(`Instagram guardado: @${h}`); return renderDrawer(); }
+      case "ig-del": delete c.f.instagram; Store.saveCompany(c); closeModal(); toast("Instagram quitado"); return renderDrawer();
       case "quick-date": $("#d-date").value = a.dataset.n ? addDays(todayISO(), +a.dataset.n) : ""; return;
       case "save-done": {
         const T = todayISO(), type = $("#d-type").value, text = $("#d-text").value.trim(), ns = $("#d-status").value;
@@ -1903,6 +2060,8 @@ document.addEventListener("change", e => {
   if (t.matches("[data-filter]") && t.id !== "q") { applyFilterInput(t); return render(); }
   if (t.matches("[data-crm]")) { const c = S.companies.get(S.openId); if (!c) return; const k = t.dataset.crm; let v = t.value; if (k === "amount") v = v === "" ? "" : Math.max(0, +v); if (c.crm[k] === v) return; c.crm[k] = v; Store.saveCompany(c); toast("Guardado"); return; }
   if (t.matches("[data-svc]")) { const k = t.dataset.svc; const svc = S.settings.service; svc[k] = ["targetCnae", "targetKeywords"].includes(k) ? t.value.split(",").map(x => x.trim()).filter(Boolean) : t.value.trim(); S.settings.svcRev++; Store.saveSettings(); toast("Servicio actualizado: el análisis se ha recalculado"); return; }
+  if (t.id === "m-tone") return regenMail();
+  if (t.matches("[data-mail]")) { S.settings.email[t.dataset.mail] = t.value.trim(); Store.saveSettings(); regenMail(); toast("Firma guardada"); return; }
   if (t.matches("[data-st]")) { const s = S.settings.statuses[+t.dataset.i]; const k = t.dataset.st; s[k] = k === "stage" ? +t.value : t.value; if (k === "label" && !s.label.trim()) s.label = "Sin nombre"; Store.saveSettings(); return; }
   if (t.matches("[data-tg]")) { const g = S.settings.tags[+t.dataset.i]; g[t.dataset.tg] = t.value || g[t.dataset.tg]; Store.saveSettings(); return; }
 });
@@ -1927,8 +2086,11 @@ document.addEventListener("keydown", e => {
   S.settings = settings || { service: structuredClone(DEFAULT_SERVICE), statuses: structuredClone(DEFAULT_STATUSES), tags: DEFAULT_TAGS, savedSearches: defaultSavedSearches(), svcRev: 0 };
   if (!settings) fresh = true;
   S.settings.svcRev = S.settings.svcRev || 0;
+  S.settings.email = { ...DEFAULT_EMAIL, ...(S.settings.email || {}) };
   S.settings.savedSearches ||= []; S.settings.tags ||= []; S.settings.statuses ||= structuredClone(DEFAULT_STATUSES);
   comps.forEach(c => { c.crm ||= { tags: [] }; c.crm.tags ||= []; c.contacts ||= []; c.interactions ||= []; c.f ||= {}; S.companies.set(c.id, c); });
+  // Fichas guardadas antes de existir el campo Instagram: lo saca de "Redes sociales" si trae el enlace
+  comps.forEach(c => { const so = c.f.social; if (c.f.instagram || !so) return; const part = String(so.v).split(",").find(x => /instagram\.com/i.test(x)), h = part && igHandle(part); if (h) { c.f.instagram = { ...so, v: h }; Store.saveCompany(c); } });
   if (fresh) Store.saveSettings();
   initSearch();
   if (!comps.length) S.view = "buscar";
