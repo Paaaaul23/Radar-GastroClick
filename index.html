@@ -1223,6 +1223,7 @@ VIEWS.empresas = () => {
           ${c.crm.nextAction ? `<div style="grid-column:1/-1"><span>Próxima acción</span>${esc(c.crm.nextAction)}</div>` : ""}
         </div>
         ${tagsHTML(c) ? `<div>${tagsHTML(c)}</div>` : ""}
+        <div class="row"><button class="btn sm primary" data-act="gmail" data-id="${c.id}">${ico("mail")}<span>Enviar correo por Gmail</span></button></div>
         <div class="m-actions">${statusSelect(c)}<button class="btn" data-open="${c.id}">Ver ficha</button></div>
       </article>`).join("")}
     </div>
@@ -1317,7 +1318,8 @@ function renderDrawer() {
         ${val(c, "email") ? `<a class="btn sm" href="mailto:${esc(val(c, "email"))}">${ico("mail")}<span>Email</span></a>` : ""}
         ${val(c, "web") ? `<a class="btn sm" href="${esc(urlOf(val(c, "web")))}" target="_blank" rel="noopener">${ico("globe")}<span>Web</span></a>` : ""}
         ${igHandle(val(c, "instagram")) ? `<a class="btn sm" href="${esc(igUrl(igHandle(val(c, "instagram"))))}" target="_blank" rel="noopener">${ico("insta")}<span>Instagram</span></a>` : ""}
-        <button class="btn sm primary" data-act="compose" data-id="${c.id}">${ico("mail")}<span>Redactar correo</span></button>
+        <button class="btn sm primary" data-act="gmail" data-id="${c.id}">${ico("mail")}<span>Enviar correo por Gmail</span></button>
+        <button class="btn sm" data-act="compose" data-id="${c.id}">${ico("edit")}<span>Revisar correo</span></button>
         <button class="btn sm" data-act="done" data-id="${c.id}">${ico("check")}<span>Registrar contacto</span></button></div>
       <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${S.tab === k}" data-tab="${k}">${l}</button>`).join("")}</div></div>
     <div class="d-body">${c.demo ? `<div class="demo-flag">Empresa ficticia de ejemplo. Sus datos no son reales.</div>` : ""}${TABS[S.tab](c)}</div></aside>`;
@@ -1509,38 +1511,51 @@ function composeForm(c, tone = "cercano") {
     <div class="field"><label for="m-tone">Tono</label><select class="select" id="m-tone"><option value="cercano" ${tone === "cercano" ? "selected" : ""}>Cercano (vosotros)</option><option value="formal" ${tone === "formal" ? "selected" : ""}>Formal (ustedes)</option></select></div></div>
     <div class="field"><label for="m-subj">Asunto</label><input class="input" id="m-subj" value="${esc(d.subject)}"></div>
     <div class="field"><span class="lbl">Mensaje <span class="muted small" style="font-weight:400">· puedes editarlo aquí mismo</span></span><div class="mail-preview" id="m-body" contenteditable="true" spellcheck="true">${draftHTML(d.blocks)}</div></div>
-    <p class="small muted" style="margin:0">Gmail y la app de correo no aceptan hipervínculos en un correo abierto desde otra página. Por eso, al pulsar un botón el mensaje se copia con el enlace al vídeo como hipervínculo: solo tienes que pegarlo (Ctrl+V) en el cuerpo del correo.</p>
+    <p class="small muted" style="margin:0"><b>Abrir en Gmail</b> abre tu Gmail con este texto ya escrito; el enlace al vídeo aparece como dirección y Gmail lo convierte en enlace. Si prefieres que salga como texto con hipervínculo ("Ver la demo…"), usa <b>Copiar</b> y pégalo en el correo.</p>
     <label class="row small" style="gap:8px"><input type="checkbox" id="m-log" checked> Registrar el envío en el historial y programar seguimiento en 4 días</label>
     <details class="mail-sig" ${!E.from ? "open" : ""}><summary><b>Tu firma</b> <span class="muted small">(se guarda para todos los correos)</span></summary>
       <div class="grid-form" style="margin-top:10px">${[["from", "Tu nombre", "p. ej. Paul Pérez"], ["role", "Cargo", "p. ej. fundador"], ["phone", "Teléfono", "p. ej. 600 000 000"], ["web", "Web", "p. ej. gastroclick.es"], ["product", "Nombre del servicio", "GastroClick"], ["video", "Enlace al vídeo demo", "https://youtube.com/…"]].map(([k, l, ph]) => `<div class="field"><label for="ms-${k}">${l}</label><input class="input" id="ms-${k}" data-mail="${k}" value="${esc(E[k] || "")}" placeholder="${esc(ph)}"></div>`).join("")}</div></details>`;
-  modal(`Correo para ${val(c, "name")}`, body, `<button class="btn" data-act="mail-copy">${ico("doc")}<span>Copiar</span></button><button class="btn" data-act="mail-app">${ico("mail")}<span>Copiar y abrir app de correo</span></button><button class="btn primary" data-act="mail-gmail">${ico("mail")}<span>Copiar y abrir Gmail</span></button>`, true);
+  modal(`Correo para ${val(c, "name")}`, body, `<button class="btn" data-act="mail-copy">${ico("doc")}<span>Copiar</span></button><button class="btn primary" data-act="mail-gmail">${ico("mail")}<span>Abrir en Gmail</span></button>`, true);
 }
 function regenMail() {
   const c = S.companies.get(S.mail?.id); if (!c || !$("#m-body")) return;
   const d = emailDraft(c, $("#m-tone").value); $("#m-subj").value = d.subject; $("#m-body").innerHTML = draftHTML(d.blocks);
 }
+// En el móvil, mailto abre la app de Gmail con todo relleno; en el ordenador, Gmail web
+const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+function openGmail(to, subj, text) {
+  if (IS_MOBILE) location.href = `mailto:${encodeURIComponent(to).replace(/%40/g, "@")}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(text)}`;
+  else window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(text)}`, "_blank", "noopener");
+}
+function logMail(c, to, subj) {
+  const T = todayISO();
+  c.interactions.push({ id: uid("i"), date: T, type: "Email", text: `Correo de presentación de ${S.settings.email.product || "GastroClick"} enviado${to ? " a " + to : ""}: "${subj}"` });
+  c.crm.lastContact = T; c.crm.firstContact ||= T; c.crm.channel = "Email";
+  if (!c.crm.nextActionDate || c.crm.nextActionDate < T) { c.crm.nextAction = "Seguimiento del correo de presentación"; c.crm.nextActionDate = addDays(T, 4); }
+  if (!c.crm.status || stageOf(c) === 0) setStatus(c, "contactado"); else Store.saveCompany(c);
+}
+// Un clic: abre Gmail con el correo ya redactado. La primera vez pide tu nombre para la firma.
+function gmailFor(c) {
+  if (!S.settings.email.from) { composeForm(c); toast("Pon tu nombre en Tu firma (solo la primera vez) y pulsa Abrir en Gmail"); return; }
+  const d = emailDraft(c, "cercano"), div = document.createElement("div"); div.innerHTML = draftHTML(d.blocks);
+  const to = recipientsOf(c)[0] || "";
+  openGmail(to, d.subject, mailText(div)); logMail(c, to, d.subject);
+  toast(to ? "Abriendo Gmail con el correo preparado" : "Abriendo Gmail: este local no tiene email público, añade el destinatario");
+  if (S.openId === c.id) renderDrawer(); else render();
+}
 async function sendMail(how) {
   const c = S.companies.get(S.mail?.id), el = $("#m-body"); if (!c || !el) return;
-  const to = $("#m-to").value.trim(), subj = $("#m-subj").value.trim(), html = mailHTML(el), text = mailText(el);
-  // El portapapeles se escribe antes de abrir otra ventana, mientras la página aún tiene el foco
-  let copied;
-  try { copied = navigator.clipboard && window.ClipboardItem ? navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([text], { type: "text/plain" }) })]) : Promise.reject(); }
-  catch (_) { copied = Promise.reject(); }
-  if (how === "gmail") window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subj)}`, "_blank", "noopener");
-  if (how === "app") location.href = `mailto:${encodeURIComponent(to).replace(/%40/g, "@")}?subject=${encodeURIComponent(subj)}`;
-  let ok = await copied.then(() => true, () => false);
-  if (!ok) { // Respaldo: copia la selección del cuerpo con su formato
-    try { const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); ok = document.execCommand("copy"); sel.removeAllRanges(); } catch (_) {}
+  const to = $("#m-to").value.trim(), subj = $("#m-subj").value.trim(), text = mailText(el);
+  if (how === "gmail") {
+    openGmail(to, subj, text);
+    if ($("#m-log")?.checked && !S.mail.logged) { S.mail.logged = true; logMail(c, to, subj); if (S.openId === c.id) renderDrawer(); }
+    closeModal(); toast("Abriendo Gmail con el correo preparado"); return;
   }
-  toast(ok ? (how === "copy" ? "Correo copiado con el enlace al vídeo" : "Correo copiado: pégalo en el cuerpo con Ctrl+V") : "No se pudo copiar: selecciona el texto y cópialo a mano");
-  if (how !== "copy" && $("#m-log")?.checked && !S.mail.logged) {
-    S.mail.logged = true; const T = todayISO();
-    c.interactions.push({ id: uid("i"), date: T, type: "Email", text: `Correo de presentación de ${S.settings.email.product || "GastroClick"} enviado${to ? " a " + to : ""}: "${subj}"` });
-    c.crm.lastContact = T; c.crm.firstContact ||= T; c.crm.channel = "Email";
-    if (!c.crm.nextActionDate || c.crm.nextActionDate < T) { c.crm.nextAction = "Seguimiento del correo de presentación"; c.crm.nextActionDate = addDays(T, 4); }
-    if (!c.crm.status || stageOf(c) === 0) setStatus(c, "contactado"); else Store.saveCompany(c);
-    renderDrawer();
-  }
+  // Copiar con formato: el enlace al vídeo se pega como hipervínculo
+  let ok = false;
+  try { await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([mailHTML(el)], { type: "text/html" }), "text/plain": new Blob([text], { type: "text/plain" }) })]); ok = true; } catch (_) {}
+  if (!ok) { try { const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); ok = document.execCommand("copy"); sel.removeAllRanges(); } catch (_) {} }
+  toast(ok ? "Correo copiado con el enlace al vídeo como hipervínculo" : "No se pudo copiar: selecciona el texto y cópialo a mano");
 }
 
 /* ---------- Instagram del local ---------- */
@@ -1837,11 +1852,19 @@ function resultCard({ r, dup, sc }) {
     <div class="row" style="gap:6px"><span class="pill">${esc(r.sector)}</span>${r.brand ? `<span class="pill" style="background:var(--warm-soft);color:var(--warm)">Cadena: ${esc(r.brand)}</span>` : ""}${r.services ? `<span class="pill">${esc(r.services)}</span>` : ""}</div>
     <div class="r-facts">${r.phone ? `<span>${ico("phone")}<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></span>` : `<span class="na">Sin teléfono publicado</span>`}${r.email ? `<span>${ico("mail")}<a href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : ""}${r.web ? `<span>${ico("globe")}<a href="${esc(urlOf(r.web))}" target="_blank" rel="noopener">${esc(domainOf(r.web))}</a></span>` : ""}${r.instagram ? `<span><a href="${esc(igUrl(r.instagram))}" target="_blank" rel="noopener">@${esc(r.instagram)}</a> (Instagram)</span>` : r.social ? `<span>Redes sociales</span>` : ""}</div>
     ${sc.top ? `<div class="small" style="color:var(--ink-2)"><b style="color:var(--ink)">Oportunidad:</b> ${esc(sc.top)}.</div>` : ""}
+    <div class="row"><button class="btn sm primary" data-act="r-mail" data-k="${esc(k)}">${ico("mail")}<span>Enviar correo por Gmail</span></button><button class="btn sm" data-act="r-compose" data-k="${esc(k)}">${ico("edit")}<span>Revisar</span></button></div>
     <div class="row" style="justify-content:space-between">${dup ? `<button class="btn sm" data-open="${dup.id}">Ya en tu base: abrir</button>` : `<span class="small muted">${r.hours ? "Horario publicado" : ""}</span>`}<span class="row" style="gap:12px"><a class="small" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([r.name, r.address, r.municipality || r.province].filter(Boolean).join(", "))}" target="_blank" rel="noopener" title="Abre la búsqueda en Google Maps para ver teléfono, reseñas y fotos">Google Maps</a><a class="small" href="${esc(r.osmUrl)}" target="_blank" rel="noopener">Mapa</a></span></div>
   </article>`;
 }
 
 /* ---------- Acciones ---------- */
+function resultCompany(k) {
+  const r = S.search.results.find(x => rKey(x) === k); if (!r) return null;
+  const inc = resultToCompany(r), dup = findDuplicate(inc);
+  if (dup) { if (mergeExternal(dup, inc)) Store.saveCompany(dup); return dup; }
+  const c = newCompany(); c.f = inc.f; c.ext = inc.ext; Store.saveCompany(c); S.search.sel.delete(k); buildDupIndex();
+  return c;
+}
 async function runOsm() {
   const s = S.search, F = s.form; s.done = 10;
   const step = (t, wait) => {
@@ -1873,6 +1896,8 @@ const SEARCH_ACTIONS = {
   "stop-search": () => { S.search.cancel = true; try { S._abort?.abort(); } catch (_) {} },
   "clear-results": () => { Object.assign(S.search, { results: [], label: "", errors: [], q: "", show: 120, sectorF: "" }); S.search.sel.clear(); render(); },
   "r-more": () => { S.search.show += 240; render(); },
+  "r-mail": a => { const c = resultCompany(a.dataset.k); if (c) gmailFor(c); },
+  "r-compose": a => { const c = resultCompany(a.dataset.k); if (c) composeForm(c); },
   "add-results": async () => {
     const s = S.search; const toSave = []; let added = 0, merged = 0;
     for (const r of s.results) {
@@ -2007,7 +2032,7 @@ document.addEventListener("click", async e => {
       case "done": return doneForm(c);
       case "compose": return composeForm(c);
       case "mail-copy": return sendMail("copy");
-      case "mail-app": return sendMail("app");
+      case "gmail": return gmailFor(c);
       case "mail-gmail": return sendMail("gmail");
       case "ig-find": return igForm(c);
       case "ig-save": { const raw = $("#ig-in").value.trim(), h = igHandle(raw); if (!h) { toast("Pega un @usuario o el enlace a su perfil de Instagram"); return; } c.f.instagram = { v: h, src: "verified", origin: "Comprobado manualmente", at: todayISO() }; Store.saveCompany(c); closeModal(); toast(`Instagram guardado: @${h}`); return renderDrawer(); }
