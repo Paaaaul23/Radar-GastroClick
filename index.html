@@ -1557,7 +1557,7 @@ function igForm(c) {
 </script>
 <script>
 /* ============ BUSCAR: OpenStreetMap directamente desde el navegador (gratis, sin clave) ============ */
-const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"];
+const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass.osm.jp/api/interpreter"];
 const PROVS = [
   ["A Coruña", ["ES-C"], "Coruña"], ["Álava", ["ES-VI"], "lava|Araba"], ["Albacete", ["ES-AB"]], ["Alicante", ["ES-A"], "Alicante|Alacant"], ["Almería", ["ES-AL"]],
   ["Asturias", ["ES-O", "ES-AS"], "Asturias|Asturies"], ["Ávila", ["ES-AV"]], ["Badajoz", ["ES-BA"]], ["Barcelona", ["ES-B"]], ["Bizkaia", ["ES-BI"], "Bizkaia|Vizcaya"],
@@ -1595,31 +1595,42 @@ function initSearch() {
 /* ---------- Overpass ---------- */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function overpass(query, timeoutS = 120, onWait) {
-  const errors = []; let netFails = 0;
-  for (const ep of OVERPASS) {
-    const host = new URL(ep).host;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      if (S.search?.cancel) throw new Error("Búsqueda detenida");
+  // Recorre todos los servidores: si uno está ocupado pasa enseguida al siguiente, y solo
+  // cuando todos lo están espera unos segundos (con cuenta atrás) y vuelve a intentarlo.
+  const say = m => onWait && onWait(m, true);
+  const stop = () => { if (S.search?.cancel) throw new Error("Búsqueda detenida"); };
+  const eps = [...OVERPASS].sort((a, b) => (b === S._ovGood) - (a === S._ovGood));
+  let errors = [], netFails = 0;
+  for (let round = 0; round < 3; round++) {
+    if (round) for (let i = round * 15; i > 0; i--) { stop(); say(`Todos los servidores de mapas están ocupados. Reintento ${round} de 2 en ${i} s`); await sleep(1000); }
+    errors = []; netFails = 0; let retry = false;
+    for (const ep of eps) {
+      stop();
+      const host = new URL(ep).host, t0 = Date.now();
+      say(`Conectando con ${host}`);
+      const tick = setInterval(() => say(`Esperando respuesta de ${host}… ${Math.round((Date.now() - t0) / 1000)} s`), 1000);
+      const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), (timeoutS + 15) * 1000);
+      S._abort = ctrl;
       try {
-        const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), (timeoutS + 30) * 1000);
-        S._abort = ctrl;
         const r = await fetch(ep, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" }, body: "data=" + encodeURIComponent(query), signal: ctrl.signal });
-        clearTimeout(t);
         const txt = await r.text();
-        if (r.status === 429 || r.status === 504) { errors.push(`${host}: ${r.status === 429 ? "pide esperar" : "saturado"}`); if (attempt === 0) { onWait && onWait(`El servidor de mapas está ocupado. Reintentando en 10 segundos`); await sleep(10000); continue; } break; }
-        if (!r.ok) { errors.push(`${host}: error ${r.status}`); if (r.status === 400) { console.error(query, txt); throw new Error("Consulta rechazada por OpenStreetMap: " + (txt.match(/Error<\/strong>:([^<]+)/) || [, "error 400"])[1].trim()); } break; }
-        let j; try { j = JSON.parse(txt); } catch (_) { errors.push(`${host}: respuesta no válida`); break; }
-        if (j.remark && /error|timed out|out of memory/i.test(j.remark) && !(j.elements || []).length) { errors.push(`${host}: ${j.remark.slice(0, 120)}`); break; }
-        return j;
+        if (r.status === 429 || r.status === 504 || r.status === 503) { errors.push(`${host}: ${r.status === 429 ? "pide esperar" : "saturado"}`); retry = true; continue; }
+        if (!r.ok) { errors.push(`${host}: error ${r.status}`); if (r.status === 400) { console.error(query, txt); throw new Error("Consulta rechazada por OpenStreetMap: " + (txt.match(/Error<\/strong>:([^<]+)/) || [, "error 400"])[1].trim()); } continue; }
+        let j; try { j = JSON.parse(txt); } catch (_) { errors.push(`${host}: respuesta no válida`); retry = true; continue; }
+        if (j.remark && /error|timed out|out of memory/i.test(j.remark) && !(j.elements || []).length) { errors.push(`${host}: ${j.remark.slice(0, 120)}`); retry = true; continue; }
+        S._ovGood = ep; return j;
       } catch (e) {
-        if (S.search?.cancel) throw new Error("Búsqueda detenida");
+        stop();
         if (/rechazada/.test(e.message)) throw e;
+        // Un servidor saturado a veces responde sin cabeceras CORS y el navegador lo ve como "sin conexión"
         if (e.name === "AbortError") errors.push(`${host}: tiempo agotado`); else { netFails++; errors.push(`${host}: sin conexión`); }
-        break;
-      }
+        retry = true;
+      } finally { clearInterval(tick); clearTimeout(t); }
     }
+    if (netFails === eps.length) break; // ningún servidor alcanzable: la red del usuario lo bloquea
+    if (!retry) break;
   }
-  if (netFails === OVERPASS.length) { const e = new Error(BLOCKED_MSG); e.blocked = true; throw e; }
+  if (netFails === eps.length) { const e = new Error(BLOCKED_MSG); e.blocked = true; throw e; }
   throw new Error("Los servidores de mapas no responden ahora mismo (" + errors.join(" · ") + "). Espera un minuto y vuelve a intentarlo.");
 }
 const IN_FRAME = (() => { try { return window.self !== window.top; } catch (_) { return true; } })();
@@ -1694,11 +1705,11 @@ async function osmSearch(provName, cats, onStep) {
   const sel = cats.map(c => `nwr(area.p)${CATS[c].q}["name"];`).join("");
   onStep(`Descargando locales de ${prov.name} (en provincias grandes tarda hasta 1-2 minutos)`);
   // Plan A: el área de la provincia por su código oficial (p. ej. ES-OR)
-  let j = await overpass(`[out:json][timeout:150];(${prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("")})->.p;(${sel});out center tags;`, 150, onStep);
+  let j = await overpass(`[out:json][timeout:90];(${prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("")})->.p;(${sel});out center tags;`, 90, onStep);
   // Plan B: por el nombre de la provincia
   if (!(j.elements || []).length) {
     onStep(`Probando por el nombre de la provincia`);
-    j = await overpass(`[out:json][timeout:150];area["ISO3166-1"="ES"]["admin_level"="2"]->.es;rel(area.es)["boundary"="administrative"]["admin_level"~"^(4|6)$"]["name"~"${prov.rx}",i];map_to_area->.p;(${sel});out center tags;`, 150, onStep);
+    j = await overpass(`[out:json][timeout:90];area["ISO3166-1"="ES"]["admin_level"="2"]->.es;rel(area.es)["boundary"="administrative"]["admin_level"~"^(4|6)$"]["name"~"${prov.rx}",i];map_to_area->.p;(${sel});out center tags;`, 90, onStep);
   }
   const seen = new Set(), out = [];
   for (const el of j.elements || []) {
@@ -1833,7 +1844,10 @@ function resultCard({ r, dup, sc }) {
 /* ---------- Acciones ---------- */
 async function runOsm() {
   const s = S.search, F = s.form; s.done = 10;
-  const step = t => { s.label = t + "…"; s.done = Math.min(90, s.done + 20); render(); };
+  const step = (t, wait) => {
+    if (wait) { s.label = t; const el = $(".progress + [role=status]"); if (el) { el.textContent = t; return; } return render(); }
+    s.label = t + "…"; s.done = Math.min(90, s.done + 20); render();
+  };
   try { s.results = await osmSearch(F.oprov, F.cats, step); }
   catch (e) { if (!s.cancel) s.errors.push(e.message); return; }
   if (!s.results.length) return;
