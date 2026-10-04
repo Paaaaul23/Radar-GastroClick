@@ -357,6 +357,10 @@ table.data{width:100%;border-collapse:separate;border-spacing:0;min-width:1680px
 .mail-preview:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .mail-preview p{margin:0 0 12px}.mail-preview ul{margin:0 0 12px;padding-left:20px}.mail-preview li{margin:0 0 4px}.mail-preview a{color:var(--accent)}
 .mail-sig summary{cursor:pointer}
+.tpl{border-top:1px solid var(--line);padding:12px 0}.tpl summary{cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tpl-body{font-size:14px;line-height:1.5;min-height:260px;resize:vertical}
+.tpl-vars{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:8px 16px;margin-top:10px}.tpl-vars div{display:flex;flex-direction:column;gap:2px}
+.tpl-vars code,.tpl code{font-size:12.5px;background:var(--surface-2);padding:1px 5px;border-radius:5px;width:fit-content}
 .r-facts{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--ink-2)}
 .r-facts span{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow-wrap:anywhere}
 .r-facts .ico{width:14px;height:14px}
@@ -1266,6 +1270,22 @@ VIEWS.ajustes = () => {
       </div>
       <p class="small muted" style="margin:10px 0 0">Las oportunidades se detectan por el nombre de los módulos: comandas/QR/pedidos, fichajes/planning, reservas e inventario/insumos/escandallos. Con otros módulos, la ficha propone el encaje general del servicio.</p>
     </section>
+    <section class="card" id="tpl-card" style="grid-column:1/-1"><div class="card-head"><h2>Plantillas de correo</h2><div class="row"><button class="btn sm" data-act="tpl-add">${ico("plus")}<span>Nueva plantilla</span></button><button class="btn sm ghost" data-act="tpl-reset">${ico("refresh")}<span>Restaurar originales</span></button></div></div>
+      <p class="muted small" style="margin-top:-6px">Una plantilla por cada acercamiento. Cambia el asunto y el texto como quieras: las palabras entre llaves se rellenan solas con los datos de cada local. Se guarda al salir de cada campo.</p>
+      ${S.settings.templates.map((t, i) => `<details class="tpl" data-tplid="${esc(t.id)}" ${S.tplOpen === t.id ? "open" : ""}><summary><b>${esc(t.name)}</b>${t.use !== "manual" ? ` <span class="pill" style="background:var(--accent-soft);color:var(--accent)">${t.use === "first" ? "Primer contacto" : "Seguimiento"}</span>` : ""}</summary>
+        <div class="grid-form" style="margin-top:10px"><div class="field"><label for="tp-n-${i}">Nombre del acercamiento</label><input class="input" id="tp-n-${i}" data-tpl="name" data-i="${i}" value="${esc(t.name)}"></div>
+          <div class="field"><label for="tp-u-${i}">Se usa para</label><select class="select" id="tp-u-${i}" data-tpl="use" data-i="${i}">${TPL_USES.map(([k, l]) => `<option value="${k}" ${t.use === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+          <div class="field"><label for="tp-t-${i}">Tono de {gancho} y {beneficios}</label><select class="select" id="tp-t-${i}" data-tpl="tone" data-i="${i}"><option value="cercano" ${t.tone !== "formal" ? "selected" : ""}>Cercano (vosotros)</option><option value="formal" ${t.tone === "formal" ? "selected" : ""}>Formal (ustedes)</option></select></div></div>
+        <div class="field" style="margin-top:12px"><label for="tp-s-${i}">Asunto</label><input class="input" id="tp-s-${i}" data-tpl="subject" data-i="${i}" value="${esc(t.subject)}"></div>
+        <div class="field" style="margin-top:12px"><label for="tp-b-${i}">Mensaje</label><textarea class="input tpl-body" id="tp-b-${i}" data-tpl="body" data-i="${i}" rows="16">${esc(t.body)}</textarea></div>
+        <div class="row" style="margin-top:10px"><button class="btn sm" data-act="tpl-preview" data-i="${i}">${ico("doc")}<span>Vista previa</span></button><button class="btn sm" data-act="tpl-dup" data-i="${i}">${ico("plus")}<span>Duplicar</span></button><button class="btn sm danger" data-act="tpl-del" data-i="${i}">${ico("trash")}<span>Eliminar</span></button></div>
+      </details>`).join("")}
+      <details class="tpl"><summary><b>Campos que se rellenan solos</b></summary>
+        <div class="tpl-vars">${TPL_VARS.map(([k, l]) => `<div><code>{${k}}</code><span class="small muted">${esc(l)}</span></div>`).join("")}</div>
+        <ul class="small muted" style="margin:10px 0 0;padding-left:18px"><li>Lo que pongas entre <code>[[</code> y <code>]]</code> solo aparece si todos sus campos tienen valor. Ejemplo: <code>[[ Llamadme al {telefono}.]]</code> desaparece si no has puesto teléfono.</li><li>Deja una línea en blanco para separar párrafos. Las líneas que empiezan por <code>• </code> o <code>- </code> forman una lista.</li><li>El botón <b>Enviar correo por Gmail</b> usa la plantilla de «Primer contacto», o la de «Seguimiento» si ya le habías escrito a ese local.</li></ul>
+      </details>
+    </section>
+    <section class="card"><h2>Tu firma</h2><p class="muted small" style="margin-top:-6px">Se usa en los campos {mi_nombre}, {cargo}, {telefono}, {web}, {servicio}, {video} y {firma}.</p><div class="grid-form">${sigFields("st")}</div></section>
     <section class="card"><div class="card-head"><h2>Estados comerciales</h2><button class="btn sm" data-act="add-status">${ico("plus")}<span>Añadir estado</span></button></div>
       <p class="muted small" style="margin-top:-6px">La fase decide en qué paso del embudo cuenta cada estado.</p>
       ${S.settings.statuses.map((s, i) => `<div class="st-row"><input type="color" value="${s.color}" data-st="color" data-i="${i}" aria-label="Color"><input class="input" value="${esc(s.label)}" data-st="label" data-i="${i}" aria-label="Nombre del estado">
@@ -1445,49 +1465,136 @@ function mailBenefit(o, c, F) {
   return { k: w, t: cap(o.what) + "." };
 }
 
-function emailDraft(c, tone) {
-  const E = S.settings.email, P = E.product || "GastroClick", F = tone === "formal", name = val(c, "name");
-  const person = String(c.crm.contactPerson || c.contacts.find(k => k.name)?.name || "").trim().split(/\s+/)[0];
+/* ---------- Plantillas de correo (una por acercamiento, editables en Ajustes) ---------- */
+const TPL_VARS = [
+  ["local", "Nombre del local"], ["contacto", "Nombre de la persona de contacto o, si no hay, «equipo de [local]»"],
+  ["municipio", "Municipio del local"], ["gancho", "Frase personalizada con lo que se sabe del local (valoración, terraza, horario, antigüedad…)"],
+  ["beneficios", "Lista de 2 a 4 ventajas elegidas para ese local (va en su propio párrafo)"], ["asunto_sugerido", "Asunto automático según su mayor oportunidad"],
+  ["video", "Enlace al vídeo demo"], ["servicio", "Nombre de tu servicio"], ["mi_nombre", "Tu nombre"], ["cargo", "Tu cargo"],
+  ["telefono", "Tu teléfono"], ["web", "Tu web"], ["firma", "Tu nombre, cargo, teléfono y web, uno por línea"]
+];
+const TPL_USES = [["first", "Primer contacto (botón Gmail)"], ["followup", "Seguimiento (si ya le escribiste)"], ["manual", "Solo al elegirla"]];
+function defaultTemplates() {
+  return [
+    { id: "tpl-primero", name: "Primer contacto · cercano", use: "first", tone: "cercano", subject: "{asunto_sugerido}",
+      body: `Hola, {contacto}:
+
+[[Me llamo {mi_nombre}, de {servicio}.]] {gancho}
+
+Os escribo para presentaros {servicio}, una plataforma que hemos creado pensando en la hostelería: carta digital y comandas por QR, control de sala, reservas, inventario y escandallos, fichajes y planning del equipo, y facturación preparada para VERI*FACTU, todo en un mismo sitio.
+
+En un local como el vuestro, creo que os ayudaría sobre todo a:
+
+{beneficios}
+
+[[Os dejo un vídeo corto en el que se ve cómo funciona:
+{video}]]
+
+Si os encaja, me encantaría enseñároslo con calma: puedo pasarme por el local o hacer una videollamada de 15 minutos, cuando mejor os venga.[[ También podéis llamarme o escribirme por WhatsApp al {telefono}.]]
+
+Un saludo,
+{firma}
+
+P. D.: Si no os interesa, decídmelo y no os vuelvo a escribir.` },
+    { id: "tpl-formal", name: "Primer contacto · formal", use: "manual", tone: "formal", subject: "Propuesta de {servicio} para {local}",
+      body: `Buenos días, {contacto}:
+
+[[Me llamo {mi_nombre}, de {servicio}.]] {gancho}
+
+Les escribo para presentarles {servicio}, una plataforma que hemos creado pensando en la hostelería: carta digital y comandas por QR, control de sala, reservas, inventario y escandallos, fichajes y planning del equipo, y facturación preparada para VERI*FACTU, todo en un mismo sitio.
+
+En un negocio como el suyo, creo que les ayudaría especialmente a:
+
+{beneficios}
+
+[[Les dejo un breve vídeo en el que pueden ver cómo funciona:
+{video}]]
+
+Si les resulta de interés, será un placer mostrárselo: puedo acercarme al local o hacer una videollamada de 15 minutos cuando mejor les convenga.[[ También pueden contactarme en el {telefono}.]]
+
+Atentamente,
+{firma}
+
+Si no desean recibir más correos, basta con que me lo indiquen y no volveré a escribirles.` },
+    { id: "tpl-seguimiento", name: "Seguimiento · sin respuesta", use: "followup", tone: "cercano", subject: "¿Pudisteis ver el vídeo de {servicio}?",
+      body: `Hola, {contacto}:
+
+Os escribí hace unos días para presentaros {servicio} y quería saber si habéis podido echarle un vistazo.
+
+Sé que en hostelería el tiempo va justo, así que os lo resumo. En {local} os ayudaría a:
+
+{beneficios}
+
+[[Aquí tenéis otra vez el vídeo, dura muy poco:
+{video}]]
+
+¿Os vendría bien que me pasara 10 minutos esta semana, en el momento más tranquilo del día, para enseñároslo en directo?[[ Si lo preferís, llamadme al {telefono}.]]
+
+Un saludo,
+{firma}` },
+    { id: "tpl-visita", name: "Tras una visita o llamada", use: "manual", tone: "cercano", subject: "Lo que hablamos: {servicio} para {local}",
+      body: `Hola, {contacto}:
+
+Muchas gracias por atenderme. Como os comenté, os resumo lo que {servicio} puede aportar a {local}:
+
+{beneficios}
+
+[[Os dejo el vídeo para que lo veáis con calma y podáis enseñárselo al resto del equipo:
+{video}]]
+
+Si os parece, el siguiente paso sería preparar una prueba con vuestra carta y vuestras mesas para que lo veáis funcionando en vuestro propio local. ¿Qué día os viene bien?
+
+Un saludo,
+{firma}` }
+  ];
+}
+function mailHook(c, F) {
   const rt = val(c, "rating"), rv = val(c, "reviews"), y = ageYears(c), muni = val(c, "municipality");
   const svcs = norm(val(c, "services") || ""), hrs = val(c, "hours"), dOpen = hrs ? daysOpen(hrs) : null;
-  const B = [];
-  B.push({ p: F ? (person ? `Buenos días, ${person}:` : `Estimado equipo de ${name}:`) : (person ? `Hola, ${person}:` : `Hola, equipo de ${name}:`) });
-
-  // Gancho: una sola frase basada en lo que sabemos del local
-  let hook;
-  if (rt !== null && +rt >= 4.3 && rv !== null && +rv >= 50) hook = F ? `He visto que cuentan con un ${nf1.format(rt)}★ y ${nf.format(rv)} reseñas en Google; se nota el cuidado que ponen en el servicio.` : `He visto que tenéis un ${nf1.format(rt)}★ con ${nf.format(rv)} reseñas en Google: se nota que cuidáis mucho el servicio.`;
-  else if (y !== null && y < 1.5) hook = F ? "Sé que su negocio lleva poco tiempo en marcha, y es justo al principio cuando más se agradece tener la gestión ordenada desde el primer día." : "Sé que lleváis poco tiempo en marcha, y justo al principio es cuando más se agradece tener la gestión ordenada desde el primer día.";
-  else if (svcs.includes("terraza")) hook = F ? `Me fijé en que disponen de terraza${muni ? ` en ${muni}` : ""}, y en las horas punta es donde más se nota cada viaje del camarero.` : `Me fijé en que tenéis terraza${muni ? ` en ${muni}` : ""}, y en las horas punta es donde más se nota cada viaje del camarero.`;
-  else if (dOpen !== null && dOpen >= 6) hook = F ? `Abren ${dOpen === 7 ? "todos los días" : "seis días a la semana"}, así que imagino que cuadrar turnos y pedidos no es poca cosa.` : `Abrís ${dOpen === 7 ? "todos los días" : "seis días a la semana"}, así que imagino que cuadrar turnos y pedidos no es poca cosa.`;
-  else if (muni) hook = F ? `Estoy contactando con locales de hostelería de ${muni} y el suyo me llamó la atención.` : `Estoy contactando con locales de hostelería de ${muni} y el vuestro me llamó la atención.`;
-  const me = E.from ? `Me llamo ${E.from}${E.role ? `, ${E.role} de ${P}` : `, de ${P}`}.` : "";
-  B.push({ p: [me, hook].filter(Boolean).join(" ") || (F ? "Me pongo en contacto con ustedes porque trabajo con locales de hostelería." : "Os escribo porque trabajo con locales de hostelería como el vuestro.") });
-
-  B.push({ p: `${F ? "Les escribo para presentarles" : "Os escribo para presentaros"} ${P}, una plataforma que hemos creado pensando en la hostelería: carta digital y comandas por QR, control de sala, reservas, inventario y escandallos, fichajes y planning del equipo, y facturación preparada para VERI*FACTU, todo en un mismo sitio.` });
-
-  const items = [], seen = new Set();
-  for (const o of whyContact(c).opps) { const b = mailBenefit(o, c, F); if (!seen.has(b.k)) { seen.add(b.k); items.push(b.t); } }
+  if (rt !== null && +rt >= 4.3 && rv !== null && +rv >= 50) return F ? `He visto que cuentan con un ${nf1.format(rt)}★ y ${nf.format(rv)} reseñas en Google; se nota el cuidado que ponen en el servicio.` : `He visto que tenéis un ${nf1.format(rt)}★ con ${nf.format(rv)} reseñas en Google: se nota que cuidáis mucho el servicio.`;
+  if (y !== null && y < 1.5) return F ? "Sé que su negocio lleva poco tiempo en marcha, y es justo al principio cuando más se agradece tener la gestión ordenada desde el primer día." : "Sé que lleváis poco tiempo en marcha, y justo al principio es cuando más se agradece tener la gestión ordenada desde el primer día.";
+  if (svcs.includes("terraza")) return F ? `Me fijé en que disponen de terraza${muni ? ` en ${muni}` : ""}, y en las horas punta es donde más se nota cada viaje del camarero.` : `Me fijé en que tenéis terraza${muni ? ` en ${muni}` : ""}, y en las horas punta es donde más se nota cada viaje del camarero.`;
+  if (dOpen !== null && dOpen >= 6) return F ? `Abren ${dOpen === 7 ? "todos los días" : "seis días a la semana"}, así que imagino que cuadrar turnos y pedidos no es poca cosa.` : `Abrís ${dOpen === 7 ? "todos los días" : "seis días a la semana"}, así que imagino que cuadrar turnos y pedidos no es poca cosa.`;
+  if (muni) return F ? `Estoy contactando con locales de hostelería de ${muni} y el suyo me llamó la atención.` : `Estoy contactando con locales de hostelería de ${muni} y el vuestro me llamó la atención.`;
+  return "";
+}
+function mailVars(c, tone) {
+  const E = S.settings.email, P = E.product || "GastroClick", F = tone === "formal", name = val(c, "name") || "";
+  const person = String(c.crm.contactPerson || c.contacts.find(k => k.name)?.name || "").trim().split(/\s+/)[0];
+  const opps = whyContact(c).opps, items = [], seen = new Set();
+  for (const o of opps) { const b = mailBenefit(o, c, F); if (!seen.has(b.k)) { seen.add(b.k); items.push(b.t); } }
   if (!items.length) items.push(mailBenefit({ mod: "qr", what: "comandas por qr" }, c, F).t, mailBenefit({ mod: "fichajes", what: "fichajes" }, c, F).t);
   items.splice(3);
   items.push(F ? "Emitir sus facturas cumpliendo VERI*FACTU, que será obligatorio en 2027, sin cambiar de programa." : "Facturar cumpliendo VERI*FACTU, que será obligatorio en 2027, sin cambiar de programa.");
-  B.push({ p: F ? "En un negocio como el suyo, creo que les ayudaría especialmente a:" : "En un local como el vuestro, creo que os ayudaría sobre todo a:" });
-  B.push({ ul: items });
-
-  if (E.video) B.push({ link: { pre: F ? "Les dejo un breve vídeo en el que pueden ver cómo funciona:" : "Os dejo un vídeo corto en el que se ve cómo funciona:", text: `▶ Ver la demo de ${P} en YouTube`, url: E.video } });
-  B.push({ p: F ? `Si les resulta de interés, será un placer mostrárselo: puedo acercarme al local o hacer una videollamada de 15 minutos cuando mejor les convenga.${E.phone ? ` También pueden contactarme en el ${E.phone}.` : ""}` : `Si os encaja, me encantaría enseñároslo con calma: puedo pasarme por el local o hacer una videollamada de 15 minutos, cuando mejor os venga.${E.phone ? ` También podéis llamarme o escribirme por WhatsApp al ${E.phone}.` : ""}` });
-  B.push({ sig: [F ? "Atentamente," : "Un saludo,", E.from, E.role ? `${cap(E.role)} · ${P}` : P, E.phone, E.web].filter(Boolean) });
-  B.push({ small: F ? "Si no desean recibir más correos, basta con que me lo indiquen y no volveré a escribirles." : "P. D.: Si no os interesa, decídmelo y no os vuelvo a escribir." });
-
-  const top = items[0] ? mailBenefit(whyContact(c).opps[0] || { mod: "qr", what: "qr" }, c, F).k : "";
-  const subject = F ? `Propuesta de ${P} para ${name}` : ({ qr: `Comandas por QR para ${name}`, equipo: `Fichajes y turnos de ${name}, sin papeles`, reservas: `Reservas y sala de ${name} en un solo sitio`, coste: `El coste real de cada plato en ${name}`, pedidos: `Todos los pedidos de ${name} en una pantalla` })[top] || `Una idea para ${name}`;
-  return { subject, blocks: B };
+  const top = mailBenefit(opps[0] || { mod: "qr", what: "qr" }, c, F).k;
+  const sug = F ? `Propuesta de ${P} para ${name}` : ({ qr: `Comandas por QR para ${name}`, equipo: `Fichajes y turnos de ${name}, sin papeles`, reservas: `Reservas y sala de ${name} en un solo sitio`, coste: `El coste real de cada plato en ${name}`, pedidos: `Todos los pedidos de ${name} en una pantalla` })[top] || `Una idea para ${name}`;
+  return { local: name, contacto: person || `equipo de ${name}`, municipio: val(c, "municipality") || "", gancho: mailHook(c, F), beneficios: items, asunto_sugerido: sug,
+    video: E.video || "", videoText: `▶ Ver la demo de ${P} en YouTube`, servicio: P, mi_nombre: E.from || "", cargo: E.role || "", telefono: E.phone || "", web: E.web || "",
+    firma: [E.from, E.role ? `${cap(E.role)} · ${P}` : P, E.phone, E.web].filter(Boolean) };
 }
-function draftHTML(blocks) {
-  return blocks.map(b => b.p ? `<p>${esc(b.p)}</p>`
-    : b.ul ? `<ul>${b.ul.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`
-    : b.link ? `<p>${esc(b.link.pre)}<br><a href="${esc(b.link.url)}" target="_blank" rel="noopener"><b>${esc(b.link.text)}</b></a></p>`
-    : b.sig ? `<p>${b.sig.map(esc).join("<br>")}</p>`
-    : `<p><small style="color:#6b7280">${esc(b.small)}</small></p>`).join("");
+// Rellena una plantilla: {campo} se sustituye; [[ … ]] solo aparece si todos sus campos tienen valor;
+// los párrafos se separan con una línea en blanco y las líneas que empiezan por "• " o "- " forman una lista.
+function renderTemplate(tpl, c) {
+  const V = mailVars(c, tpl.tone), empty = k => !(k in V) ? false : Array.isArray(V[k]) ? !V[k].length : !V[k];
+  const opt = s => String(s || "").replace(/\r/g, "").replace(/\[\[([\s\S]*?)\]\]/g, (_, inner) => (inner.match(/\{(\w+)\}/g) || []).some(m => empty(m.slice(1, -1))) ? "" : inner);
+  const subT = s => s.replace(/\{(\w+)\}/g, (m, k) => !(k in V) ? m : k === "video" ? (V.video ? `${V.videoText}: ${V.video}` : "") : Array.isArray(V[k]) ? V[k].join("\n") : V[k]);
+  const subH = s => s.split(/(\{\w+\})/).map(part => { const k = (part.match(/^\{(\w+)\}$/) || [])[1]; if (!k || !(k in V)) return esc(part); if (k === "video") return V.video ? `<a href="${esc(V.video)}" target="_blank" rel="noopener"><b>${esc(V.videoText)}</b></a>` : ""; return Array.isArray(V[k]) ? V[k].map(esc).join("<br>") : esc(V[k]); }).join("");
+  const tidy = s => s.replace(/[ \t]{2,}/g, " ").trim();
+  const html = [], text = [];
+  for (const para of opt(tpl.body).replace(/\{beneficios\}/g, "\n\n{beneficios}\n\n").split(/\n\s*\n/)) {
+    const p = para.trim(); if (!p) continue;
+    if (p === "{beneficios}") { html.push(`<ul>${V.beneficios.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`); text.push(V.beneficios.map(x => "• " + x).join("\n")); continue; }
+    const lines = p.split("\n").map(l => l.trim()).filter(l => tidy(subT(l)));
+    if (!lines.length) continue;
+    if (lines.every(l => /^[•\-*]\s/.test(l))) { const its = lines.map(l => l.replace(/^[•\-*]\s+/, "")); html.push(`<ul>${its.map(l => `<li>${tidy(subH(l))}</li>`).join("")}</ul>`); text.push(its.map(l => "• " + tidy(subT(l))).join("\n")); continue; }
+    html.push(`<p>${lines.map(l => tidy(subH(l))).join("<br>")}</p>`); text.push(lines.map(l => tidy(subT(l))).join("\n"));
+  }
+  return { subject: tidy(subT(opt(tpl.subject))).replace(/\n/g, " "), html: html.join(""), text: text.join("\n\n") };
+}
+const tplById = id => S.settings.templates.find(t => t.id === id);
+function pickTemplate(c) {
+  const T = S.settings.templates, sent = c.interactions.some(i => i.type === "Email");
+  return (sent && T.find(t => t.use === "followup")) || T.find(t => t.use === "first") || T[0];
 }
 // Texto plano del cuerpo editado (los enlaces se escriben como "texto: url")
 function nodeText(n) {
@@ -1503,23 +1610,26 @@ function nodeText(n) {
 const mailText = el => nodeText(el).replace(/\n{3,}/g, "\n\n").trim();
 const mailHTML = el => `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.55;color:#1f2937">${el.innerHTML.replace(/<p>/g, '<p style="margin:0 0 12px">').replace(/<a /g, '<a style="color:#2350F5" ')}</div>`;
 
-function composeForm(c, tone = "cercano") {
+function composeForm(c, tplId) {
+  const tpl = tplById(tplId) || pickTemplate(c);
   S.mail = { id: c.id, logged: false };
-  const tos = recipientsOf(c), d = emailDraft(c, tone), E = S.settings.email;
+  const tos = recipientsOf(c), d = renderTemplate(tpl, c), E = S.settings.email;
   const body = `${!E.from ? `<div class="notice warn">${ico("info")}<div>Añade tu nombre y teléfono en <b>Tu firma</b> (abajo) para que el correo salga firmado.</div></div>` : ""}
     <div class="grid-form"><div class="field"><label for="m-to">Para</label><input class="input" id="m-to" type="email" list="m-tos" value="${esc(tos[0] || "")}" placeholder="${tos.length ? "" : "Sin email público: escríbelo aquí"}"><datalist id="m-tos">${tos.map(t => `<option value="${esc(t)}">`).join("")}</datalist></div>
-    <div class="field"><label for="m-tone">Tono</label><select class="select" id="m-tone"><option value="cercano" ${tone === "cercano" ? "selected" : ""}>Cercano (vosotros)</option><option value="formal" ${tone === "formal" ? "selected" : ""}>Formal (ustedes)</option></select></div></div>
+    <div class="field"><label for="m-tpl">Plantilla <button class="btn sm ghost" data-act="edit-tpls" style="min-height:0;padding:0 4px;font-weight:600">Editar plantillas</button></label><select class="select" id="m-tpl">${S.settings.templates.map(t => `<option value="${esc(t.id)}" ${t.id === tpl.id ? "selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div></div>
     <div class="field"><label for="m-subj">Asunto</label><input class="input" id="m-subj" value="${esc(d.subject)}"></div>
-    <div class="field"><span class="lbl">Mensaje <span class="muted small" style="font-weight:400">· puedes editarlo aquí mismo</span></span><div class="mail-preview" id="m-body" contenteditable="true" spellcheck="true">${draftHTML(d.blocks)}</div></div>
+    <div class="field"><span class="lbl">Mensaje <span class="muted small" style="font-weight:400">· puedes editarlo aquí mismo</span></span><div class="mail-preview" id="m-body" contenteditable="true" spellcheck="true">${d.html}</div></div>
     <p class="small muted" style="margin:0"><b>Abrir en Gmail</b> abre tu Gmail con este texto ya escrito; el enlace al vídeo aparece como dirección y Gmail lo convierte en enlace. Si prefieres que salga como texto con hipervínculo ("Ver la demo…"), usa <b>Copiar</b> y pégalo en el correo.</p>
     <label class="row small" style="gap:8px"><input type="checkbox" id="m-log" checked> Registrar el envío en el historial y programar seguimiento en 4 días</label>
     <details class="mail-sig" ${!E.from ? "open" : ""}><summary><b>Tu firma</b> <span class="muted small">(se guarda para todos los correos)</span></summary>
-      <div class="grid-form" style="margin-top:10px">${[["from", "Tu nombre", "p. ej. Paul Pérez"], ["role", "Cargo", "p. ej. fundador"], ["phone", "Teléfono", "p. ej. 600 000 000"], ["web", "Web", "p. ej. gastroclick.es"], ["product", "Nombre del servicio", "GastroClick"], ["video", "Enlace al vídeo demo", "https://youtube.com/…"]].map(([k, l, ph]) => `<div class="field"><label for="ms-${k}">${l}</label><input class="input" id="ms-${k}" data-mail="${k}" value="${esc(E[k] || "")}" placeholder="${esc(ph)}"></div>`).join("")}</div></details>`;
+      <div class="grid-form" style="margin-top:10px">${sigFields("ms")}</div></details>`;
   modal(`Correo para ${val(c, "name")}`, body, `<button class="btn" data-act="mail-copy">${ico("doc")}<span>Copiar</span></button><button class="btn primary" data-act="mail-gmail">${ico("mail")}<span>Abrir en Gmail</span></button>`, true);
 }
+const SIG_FIELDS = [["from", "Tu nombre", "p. ej. Paul Pérez"], ["role", "Cargo", "p. ej. fundador"], ["phone", "Teléfono", "p. ej. 600 000 000"], ["web", "Web", "p. ej. gastroclick.es"], ["product", "Nombre del servicio", "GastroClick"], ["video", "Enlace al vídeo demo", "https://youtube.com/…"]];
+const sigFields = pre => SIG_FIELDS.map(([k, l, ph]) => `<div class="field"><label for="${pre}-${k}">${l}</label><input class="input" id="${pre}-${k}" data-mail="${k}" value="${esc(S.settings.email[k] || "")}" placeholder="${esc(ph)}"></div>`).join("");
 function regenMail() {
   const c = S.companies.get(S.mail?.id); if (!c || !$("#m-body")) return;
-  const d = emailDraft(c, $("#m-tone").value); $("#m-subj").value = d.subject; $("#m-body").innerHTML = draftHTML(d.blocks);
+  const d = renderTemplate(tplById($("#m-tpl").value) || pickTemplate(c), c); $("#m-subj").value = d.subject; $("#m-body").innerHTML = d.html;
 }
 // En el móvil, mailto abre la app de Gmail con todo relleno; en el ordenador, Gmail web
 const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -1527,9 +1637,9 @@ function openGmail(to, subj, text) {
   if (IS_MOBILE) location.href = `mailto:${encodeURIComponent(to).replace(/%40/g, "@")}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(text)}`;
   else window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(text)}`, "_blank", "noopener");
 }
-function logMail(c, to, subj) {
+function logMail(c, to, subj, tplName) {
   const T = todayISO();
-  c.interactions.push({ id: uid("i"), date: T, type: "Email", text: `Correo de presentación de ${S.settings.email.product || "GastroClick"} enviado${to ? " a " + to : ""}: "${subj}"` });
+  c.interactions.push({ id: uid("i"), date: T, type: "Email", text: `Correo${tplName ? ` (${tplName})` : ""} enviado${to ? " a " + to : ""}: "${subj}"` });
   c.crm.lastContact = T; c.crm.firstContact ||= T; c.crm.channel = "Email";
   if (!c.crm.nextActionDate || c.crm.nextActionDate < T) { c.crm.nextAction = "Seguimiento del correo de presentación"; c.crm.nextActionDate = addDays(T, 4); }
   if (!c.crm.status || stageOf(c) === 0) setStatus(c, "contactado"); else Store.saveCompany(c);
@@ -1537,9 +1647,8 @@ function logMail(c, to, subj) {
 // Un clic: abre Gmail con el correo ya redactado. La primera vez pide tu nombre para la firma.
 function gmailFor(c) {
   if (!S.settings.email.from) { composeForm(c); toast("Pon tu nombre en Tu firma (solo la primera vez) y pulsa Abrir en Gmail"); return; }
-  const d = emailDraft(c, "cercano"), div = document.createElement("div"); div.innerHTML = draftHTML(d.blocks);
-  const to = recipientsOf(c)[0] || "";
-  openGmail(to, d.subject, mailText(div)); logMail(c, to, d.subject);
+  const tpl = pickTemplate(c), d = renderTemplate(tpl, c), to = recipientsOf(c)[0] || "";
+  openGmail(to, d.subject, d.text); logMail(c, to, d.subject, tpl.name);
   toast(to ? "Abriendo Gmail con el correo preparado" : "Abriendo Gmail: este local no tiene email público, añade el destinatario");
   if (S.openId === c.id) renderDrawer(); else render();
 }
@@ -1548,7 +1657,7 @@ async function sendMail(how) {
   const to = $("#m-to").value.trim(), subj = $("#m-subj").value.trim(), text = mailText(el);
   if (how === "gmail") {
     openGmail(to, subj, text);
-    if ($("#m-log")?.checked && !S.mail.logged) { S.mail.logged = true; logMail(c, to, subj); if (S.openId === c.id) renderDrawer(); }
+    if ($("#m-log")?.checked && !S.mail.logged) { S.mail.logged = true; logMail(c, to, subj, tplById($("#m-tpl")?.value)?.name); if (S.openId === c.id) renderDrawer(); }
     closeModal(); toast("Abriendo Gmail con el correo preparado"); return;
   }
   // Copiar con formato: el enlace al vídeo se pega como hipervínculo
@@ -2033,6 +2142,16 @@ document.addEventListener("click", async e => {
       case "compose": return composeForm(c);
       case "mail-copy": return sendMail("copy");
       case "gmail": return gmailFor(c);
+      case "edit-tpls": S.tplOpen = $("#m-tpl")?.value || S.tplOpen; closeModal(); if (S.openId) { S.openId = null; $("#layer").innerHTML = ""; document.body.style.overflow = ""; } S.view = "ajustes"; render(); setTimeout(() => $("#tpl-card")?.scrollIntoView({ block: "start" }), 50); return;
+      case "tpl-add": { const t = { id: uid("tpl"), name: "Nueva plantilla", use: "manual", tone: "cercano", subject: "{servicio} para {local}", body: "Hola, {contacto}:\n\n{gancho}\n\nEscribe aquí tu mensaje.\n\n{beneficios}\n\n[[{video}]]\n\nUn saludo,\n{firma}" }; S.settings.templates.push(t); S.tplOpen = t.id; Store.saveSettings(); return render(); }
+      case "tpl-dup": { const o = S.settings.templates[+a.dataset.i]; const t = { ...o, id: uid("tpl"), name: o.name + " (copia)", use: "manual" }; S.settings.templates.splice(+a.dataset.i + 1, 0, t); S.tplOpen = t.id; Store.saveSettings(); return render(); }
+      case "tpl-del": { if (S.settings.templates.length <= 1) { toast("Tiene que quedar al menos una plantilla"); return; } const o = S.settings.templates.splice(+a.dataset.i, 1)[0]; if (o.use !== "manual" && !S.settings.templates.some(t => t.use === o.use)) S.settings.templates[0].use = o.use; Store.saveSettings(); toast("Plantilla eliminada"); return render(); }
+      case "tpl-reset": return confirmModal("Restaurar plantillas", "Se sustituirán tus plantillas por las originales. Los cambios que hayas hecho se perderán.", "tpl-reset-ok");
+      case "tpl-reset-ok": S.settings.templates = defaultTemplates(); Store.saveSettings(); closeModal(); toast("Plantillas restauradas"); return render();
+      case "tpl-preview": { const tp = S.settings.templates[+a.dataset.i]; const real = [...S.companies.values()].filter(x => !x.demo).sort((x, y) => (y.updatedAt > x.updatedAt) - (y.updatedAt < x.updatedAt))[0];
+        const sample = real || Object.assign(newCompany({ name: "Bar Ejemplo", municipality: "Ourense", province: "Ourense", sector: "Bar", rating: 4.5, reviews: 230, employees: 6, services: "Terraza", onlineBooking: false }), { id: "sample" });
+        const d = renderTemplate(tp, sample);
+        return modal(`Vista previa: ${tp.name}`, `<p class="small muted" style="margin:0">Con los datos de <b>${esc(val(sample, "name"))}</b>${real ? " (el último local que has tocado)" : " (local de ejemplo)"}.</p><div class="field"><span class="lbl">Asunto</span><div><b>${esc(d.subject)}</b></div></div><div class="mail-preview">${d.html}</div>`, `<button class="btn primary" data-act="close-modal">Cerrar</button>`, true); }
       case "mail-gmail": return sendMail("gmail");
       case "ig-find": return igForm(c);
       case "ig-save": { const raw = $("#ig-in").value.trim(), h = igHandle(raw); if (!h) { toast("Pega un @usuario o el enlace a su perfil de Instagram"); return; } c.f.instagram = { v: h, src: "verified", origin: "Comprobado manualmente", at: todayISO() }; Store.saveCompany(c); closeModal(); toast(`Instagram guardado: @${h}`); return renderDrawer(); }
@@ -2099,7 +2218,13 @@ document.addEventListener("change", e => {
   if (t.matches("[data-filter]") && t.id !== "q") { applyFilterInput(t); return render(); }
   if (t.matches("[data-crm]")) { const c = S.companies.get(S.openId); if (!c) return; const k = t.dataset.crm; let v = t.value; if (k === "amount") v = v === "" ? "" : Math.max(0, +v); if (c.crm[k] === v) return; c.crm[k] = v; Store.saveCompany(c); toast("Guardado"); return; }
   if (t.matches("[data-svc]")) { const k = t.dataset.svc; const svc = S.settings.service; svc[k] = ["targetCnae", "targetKeywords"].includes(k) ? t.value.split(",").map(x => x.trim()).filter(Boolean) : t.value.trim(); S.settings.svcRev++; Store.saveSettings(); toast("Servicio actualizado: el análisis se ha recalculado"); return; }
-  if (t.id === "m-tone") return regenMail();
+  if (t.id === "m-tpl") return regenMail();
+  if (t.matches("[data-tpl]")) {
+    const tp = S.settings.templates[+t.dataset.i]; if (!tp) return; const k = t.dataset.tpl;
+    tp[k] = k === "name" ? (t.value.trim() || "Sin nombre") : t.value; S.tplOpen = tp.id;
+    if (k === "use" && t.value !== "manual") S.settings.templates.forEach(o => { if (o !== tp && o.use === t.value) o.use = "manual"; });
+    Store.saveSettings(); toast("Plantilla guardada"); if (k === "use" || k === "name") render(); return;
+  }
   if (t.matches("[data-mail]")) { S.settings.email[t.dataset.mail] = t.value.trim(); Store.saveSettings(); regenMail(); toast("Firma guardada"); return; }
   if (t.matches("[data-st]")) { const s = S.settings.statuses[+t.dataset.i]; const k = t.dataset.st; s[k] = k === "stage" ? +t.value : t.value; if (k === "label" && !s.label.trim()) s.label = "Sin nombre"; Store.saveSettings(); return; }
   if (t.matches("[data-tg]")) { const g = S.settings.tags[+t.dataset.i]; g[t.dataset.tg] = t.value || g[t.dataset.tg]; Store.saveSettings(); return; }
@@ -2126,6 +2251,7 @@ document.addEventListener("keydown", e => {
   if (!settings) fresh = true;
   S.settings.svcRev = S.settings.svcRev || 0;
   S.settings.email = { ...DEFAULT_EMAIL, ...(S.settings.email || {}) };
+  if (!Array.isArray(S.settings.templates) || !S.settings.templates.length) S.settings.templates = defaultTemplates();
   S.settings.savedSearches ||= []; S.settings.tags ||= []; S.settings.statuses ||= structuredClone(DEFAULT_STATUSES);
   comps.forEach(c => { c.crm ||= { tags: [] }; c.crm.tags ||= []; c.contacts ||= []; c.interactions ||= []; c.f ||= {}; S.companies.set(c.id, c); });
   // Fichas guardadas antes de existir el campo Instagram: lo saca de "Redes sociales" si trae el enlace
