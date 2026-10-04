@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radar Comercial · GastroClick</title>
+<meta name="theme-color" content="#2350F5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Radar Comercial">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%8E%AF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#F3F5F9;--surface:#FFFFFF;--surface-2:#EDF1F7;--surface-3:#E3E9F2;
+  --ink:#131C2B;--ink-2:#4A5568;--ink-3:#7F8CA0;--line:#E1E6EE;
+  --accent:#2350F5;--accent-ink:#FFFFFF;--accent-soft:#E7EDFF;
+  --hot:#EF4438;--hot-soft:#FDECEB;--warm:#E99A0C;--warm-soft:#FDF3DE;
+  --good:#0F9D63;--good-soft:#E2F6EC;--violet:#7657F2;--violet-soft:#EEEAFE;
+  --shadow:0 1px 2px rgba(19,28,43,.06),0 8px 24px -12px rgba(19,28,43,.18);
+  --r-lg:16px;--r-md:11px;--r-sm:8px;
+  --font:"Onest",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --nav-h:64px;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E131B;--surface:#151C27;--surface-2:#1B2431;--surface-3:#243041;
+  --ink:#E7ECF4;--ink-2:#AAB5C6;--ink-3:#7A879A;--line:#253043;
+  --accent:#6E8CFF;--accent-ink:#0B1020;--accent-soft:#1D2848;
+  --hot:#FF6B61;--hot-soft:#3A1C1C;--warm:#F4B545;--warm-soft:#382B12;
+  --good:#3CCB8C;--good-soft:#123326;--violet:#A08BFF;--violet-soft:#27204A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -12px rgba(0,0,0,.6);
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0E131B;--surface:#151C27;--surface-2:#1B2431;--surface-3:#243041;
+  --ink:#E7ECF4;--ink-2:#AAB5C6;--ink-3:#7A879A;--line:#253043;
+  --accent:#6E8CFF;--accent-ink:#0B1020;--accent-soft:#1D2848;
+  --hot:#FF6B61;--hot-soft:#3A1C1C;--warm:#F4B545;--warm-soft:#382B12;
+  --good:#3CCB8C;--good-soft:#123326;--violet:#A08BFF;--violet-soft:#27204A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 28px -12px rgba(0,0,0,.6);
+  color-scheme:dark;}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;overflow-x:hidden}
+img,svg{max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.ico{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* Layout */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;padding:20px 14px;border-right:1px solid var(--line);background:var(--surface);overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 18px;font-weight:800;font-size:17px;letter-spacing:-.01em}
+.brand-mark{width:30px;height:30px;border-radius:9px;background:conic-gradient(from 200deg,var(--accent),var(--violet),var(--hot),var(--warm),var(--good),var(--accent));position:relative}
+.brand-mark::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--surface)}
+.nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;background:none;border-radius:10px;cursor:pointer;color:var(--ink-2);font-weight:500;text-align:left;min-height:42px}
+.nav-btn:hover{background:var(--surface-2);color:var(--ink)}
+.nav-btn[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav-count{margin-left:auto;background:var(--hot);color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:1px 8px}
+.side-sub{margin:18px 12px 6px;font-size:13px;color:var(--ink-3);font-weight:600}
+.side-list{display:flex;flex-direction:column;gap:2px}
+.side-link{border:0;background:none;text-align:left;padding:7px 12px;border-radius:8px;color:var(--ink-2);cursor:pointer;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-link:hover{background:var(--surface-2);color:var(--ink)}
+.side-foot{margin-top:auto;padding:12px;font-size:12.5px;color:var(--ink-3)}
+.main{min-width:0;padding:28px clamp(16px,3vw,40px) 48px}
+.page-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;margin-bottom:22px}
+.page-head h1{margin:0;font-size:clamp(24px,2.4vw,30px);line-height:1.15;letter-spacing:-.02em;font-weight:750}
+.page-head p{margin:4px 0 0;color:var(--ink-2)}
+.head-actions{display:flex;flex-wrap:wrap;gap:8px}
+.bottom-nav{display:none}
+
+/* Buttons & inputs */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:8px 14px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.danger{color:var(--hot)}
+.btn.sm{min-height:34px;padding:5px 10px;font-size:13px;border-radius:9px}
+.btn.icon{padding:0;width:40px}
+.btn.sm.icon{width:34px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.input,.select,textarea.input{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);color:var(--ink);min-width:0}
+textarea.input{min-height:90px;resize:vertical;line-height:1.45}
+.input:focus,.select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.select{appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237F8CA0' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>label,.lbl{font-size:13px;font-weight:600;color:var(--ink-2)}
+.grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.search-box{position:relative;flex:1 1 280px;min-width:0}
+.search-box .ico{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
+.search-box .input{padding-left:40px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;min-width:0}
+.card h2,.card h3{margin:0 0 12px;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.card-head h2,.card-head h3{margin:0}
+.muted{color:var(--ink-3)}.small{font-size:13px}
+.empty{padding:36px 18px;text-align:center;color:var(--ink-2)}
+.empty strong{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
+.empty .row{justify-content:center;margin-top:14px}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;background:var(--surface-2);color:var(--ink-2)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:7px;font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.src{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border-radius:5px;padding:1px 6px;white-space:nowrap;cursor:help}
+.src.verified{background:var(--good-soft);color:var(--good)}
+.src.api{background:var(--accent-soft);color:var(--accent)}
+.src.estimated{background:var(--warm-soft);color:var(--warm)}
+.src.manual{background:var(--violet-soft);color:var(--violet)}
+.src.calc{background:var(--surface-2);color:var(--ink-2)}
+.na{color:var(--ink-3);font-style:italic;font-size:13px}
+
+/* Score */
+.score{display:inline-flex;align-items:center;gap:8px;font-weight:700;min-width:90px}
+.score-bar{position:relative;width:52px;height:8px;border-radius:99px;background:var(--surface-3);overflow:hidden;flex:none}
+.score-bar i{position:absolute;inset:0 auto 0 0;border-radius:inherit}
+.s-hi{color:var(--good)}.s-mid{color:var(--warm)}.s-lo{color:var(--hot)}
+.bg-hi{background:var(--good)}.bg-mid{background:var(--warm)}.bg-lo{background:var(--hot)}
+
+/* Filters */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.filters{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(190px,100%),1fr));gap:12px;margin-bottom:14px}
+.range{display:flex;gap:6px}.range .input{min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer;color:var(--ink-2);min-height:34px}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.bulk{position:sticky;top:8px;z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--ink);color:var(--surface);padding:10px 12px;border-radius:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.bulk .btn{background:transparent;color:var(--surface);border-color:rgba(255,255,255,.25)}
+.bulk .btn:hover{background:rgba(255,255,255,.1)}
+.bulk .select{width:auto;min-height:34px;background-color:transparent;color:var(--surface);border-color:rgba(255,255,255,.25);font-size:13px}
+.bulk .select option{color:#131C2B}
+
+/* Table */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);max-width:100%}
+table.data{width:100%;border-collapse:separate;border-spacing:0;min-width:1680px;font-size:13.5px}
+.data th,.data td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle;white-space:nowrap}
+.data th{position:sticky;top:0;background:var(--surface-2);font-size:12.5px;font-weight:650;color:var(--ink-2);z-index:2}
+.data th button{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.data th button:hover{color:var(--ink)}
+.data th .arr{opacity:.35;font-size:11px}.data th.sorted .arr{opacity:1;color:var(--accent)}
+.data tbody tr{cursor:pointer}
+.data tbody tr:hover td{background:var(--surface-2)}
+.data tbody tr.sel td{background:var(--accent-soft)}
+.data td.c-chk,.data th.c-chk{position:sticky;left:0;z-index:1;background:var(--surface);width:48px;min-width:48px;max-width:48px;padding:10px 0 10px 14px}
+.data th.c-chk{z-index:3;background:var(--surface-2)}
+.data td.c-name,.data th.c-name{position:sticky;left:48px;z-index:1;background:var(--surface);box-shadow:1px 0 0 var(--line);max-width:240px}
+.data th.c-name{z-index:3;background:var(--surface-2)}
+.data td.c-name{white-space:normal;min-width:200px}
+.data td.c-name strong{display:block;font-weight:650}
+.data td .select{min-height:34px;padding:4px 30px 4px 10px;font-size:13px;width:auto;max-width:180px;border-radius:9px}
+.data .trunc{max-width:190px;overflow:hidden;text-overflow:ellipsis;display:block}
+.chk{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;margin:0}
+.overdue{color:var(--hot);font-weight:600}.today-c{color:var(--warm);font-weight:600}
+.list-cards{display:none;flex-direction:column;gap:10px}
+.m-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;display:grid;gap:10px}
+.m-card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.m-top{display:flex;gap:10px;align-items:flex-start}
+.m-top .m-title{flex:1;min-width:0}
+.m-title strong{display:block;font-size:15.5px;line-height:1.3;overflow-wrap:anywhere}
+.m-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;font-size:13px}
+.m-kv div{min-width:0;overflow-wrap:anywhere}
+.m-kv span{display:block;color:var(--ink-3);font-size:12px}
+.m-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.m-actions .select{flex:1 1 160px;width:auto;min-height:40px}
+.pager{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+
+/* Dashboard */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(170px,100%),1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;min-width:0;cursor:pointer;text-align:left}
+.kpi:hover{border-color:var(--accent)}
+.kpi .k-label{font-size:13px;color:var(--ink-2);font-weight:500}
+.kpi .k-val{font-size:28px;font-weight:750;letter-spacing:-.02em;line-height:1.2;margin-top:4px;overflow-wrap:anywhere}
+.kpi.feature{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);grid-column:span 2}
+.kpi.feature .k-label{color:inherit;opacity:.85}
+@media (max-width:420px){.kpi.feature{grid-column:span 1}}
+.dash-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.span-7{grid-column:span 7}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-12{grid-column:span 12}
+.funnel{display:flex;flex-direction:column;gap:10px}
+.f-row{display:grid;grid-template-columns:minmax(90px,120px) minmax(0,1fr) 92px;gap:12px;align-items:center}
+.f-row .f-lab{font-size:13.5px;font-weight:600}
+.f-track{height:30px;border-radius:9px;background:var(--surface-2);overflow:hidden;position:relative}
+.f-fill{height:100%;border-radius:9px;min-width:4px}
+.f-num{font-weight:700;min-width:64px;text-align:right;font-size:14px}
+.f-num small{display:block;font-weight:500;color:var(--ink-3);font-size:11.5px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:170px;padding-top:10px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;height:100%;justify-content:flex-end}
+.bar-col i{width:100%;max-width:40px;border-radius:7px 7px 3px 3px;background:var(--accent);min-height:3px}
+.bar-col span{font-size:11px;color:var(--ink-3);white-space:nowrap}
+.bar-col b{font-size:12px}
+.stack{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--surface-2)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:13px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px}
+
+/* Today */
+.today-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:16px}
+.t-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.t-item:first-of-type{border-top:0}
+.t-item .t-name{font-weight:650;cursor:pointer;overflow-wrap:anywhere}
+.t-item .t-name:hover{color:var(--accent)}
+.t-item .t-sub{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
+.t-btns{display:flex;gap:6px}
+.sec-count{font-size:13px;font-weight:700;border-radius:99px;padding:1px 9px;background:var(--surface-2);color:var(--ink-2)}
+.sec-count.alert{background:var(--hot-soft);color:var(--hot)}
+
+/* Kanban */
+.kanban{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(260px,280px);gap:12px;overflow-x:auto;padding-bottom:10px;align-items:start}
+.k-col{background:var(--surface-2);border-radius:var(--r-lg);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.k-col-head{display:flex;align-items:center;gap:8px;padding:4px 4px 6px;font-weight:650;font-size:14px}
+.k-col-head .muted{margin-left:auto;font-weight:500;font-size:12.5px}
+.k-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:6px;cursor:pointer}
+.k-card:hover{border-color:var(--accent)}
+.k-card strong{font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+.k-meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12.5px;color:var(--ink-2);align-items:center}
+.k-card .select{min-height:32px;font-size:12.5px;padding:3px 28px 3px 8px}
+.stage-tabs{display:none}
+
+/* Drawer / modal */
+.scrim{position:fixed;inset:0;background:rgba(10,15,25,.45);z-index:40}
+.anim .scrim,.modal-wrap .scrim{animation:fade .15s ease}
+@keyframes fade{from{opacity:0}}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(760px,100%);background:var(--bg);z-index:41;display:flex;flex-direction:column;box-shadow:var(--shadow);padding-top:env(safe-area-inset-top,0px)}
+/**/.anim .drawer{animation:slide .2s ease}
+@keyframes slide{from{transform:translateX(24px);opacity:.6}}
+.d-head{background:var(--surface);border-bottom:1px solid var(--line);padding:16px 20px 0}
+.d-top{display:flex;gap:14px;align-items:flex-start}
+.d-top h2{margin:0;font-size:21px;line-height:1.25;letter-spacing:-.015em;overflow-wrap:anywhere}
+.d-top .d-sub{color:var(--ink-2);font-size:13.5px;margin-top:3px}
+.d-top .d-title{flex:1;min-width:0}
+.d-ctrl{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 10px;align-items:center}
+.d-ctrl .select{width:auto;flex:0 1 220px}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin:0 -4px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:10px 12px;font-weight:600;color:var(--ink-3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;min-height:44px}
+.tab[aria-selected="true"]{color:var(--accent);border-color:var(--accent)}
+.d-body{flex:1;overflow-y:auto;padding:18px 20px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.demo-flag{background:var(--warm-soft);color:var(--warm);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600}
+.why{border-left:4px solid var(--accent);background:var(--surface)}
+.why p{margin:0 0 10px}
+.why .lead{font-size:15.5px}
+.why dt{font-size:13px;font-weight:700;color:var(--ink-2);margin-top:10px}
+.why dd{margin:2px 0 0}
+.gauge{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.ring{--p:0;--c:var(--accent);width:112px;height:112px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--surface-3) 0);display:grid;place-items:center;flex:none}
+.ring>div{width:86px;height:86px;border-radius:50%;background:var(--surface);display:grid;place-items:center;text-align:center;line-height:1}
+.ring b{font-size:30px;letter-spacing:-.03em}.ring small{display:block;font-size:11px;color:var(--ink-3);margin-top:3px}
+.factors{display:flex;flex-direction:column;gap:8px;flex:1;min-width:min(260px,100%)}
+.factor{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;font-size:13.5px}
+.factor .fx{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-weight:800;font-size:13px}
+.fx.plus{background:var(--good-soft);color:var(--good)}.fx.minus{background:var(--hot-soft);color:var(--hot)}.fx.q{background:var(--surface-2);color:var(--ink-3)}
+.factor .fp{font-weight:700;color:var(--ink-2);white-space:nowrap}
+.kv{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);gap:0}
+.kv>div{padding:9px 0;border-bottom:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
+.kv>div:nth-child(odd){color:var(--ink-2);font-size:13.5px;padding-right:12px}
+.kv .val{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.timeline{display:flex;flex-direction:column;position:relative}
+.tl{display:grid;grid-template-columns:18px minmax(0,1fr);gap:12px;padding-bottom:16px;position:relative}
+.tl::before{content:"";position:absolute;left:8px;top:18px;bottom:0;width:2px;background:var(--line)}
+.tl:last-child::before{display:none}
+.tl-dot{width:18px;height:18px;border-radius:50%;border:4px solid var(--surface);box-shadow:0 0 0 2px var(--accent);background:var(--accent);margin-top:2px}
+.tl-head{font-size:13px;color:var(--ink-2)}.tl-head b{color:var(--ink)}
+.tl-text{margin-top:2px;overflow-wrap:anywhere;white-space:pre-wrap}
+.contact-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 0;border-top:1px solid var(--line);align-items:center}
+.modal-wrap{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px}
+.modal{position:relative;z-index:51;background:var(--surface);border-radius:18px;width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;box-shadow:var(--shadow);animation:pop .16s ease}
+.modal.wide{width:min(860px,100%)}
+@keyframes pop{from{transform:scale(.98);opacity:.7}}
+.m-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+.m-head h3{margin:0;font-size:17px}
+.m-body{padding:18px;display:flex;flex-direction:column;gap:14px}
+.m-foot{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding:14px 18px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--surface)}
+.src-field{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:6px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:12px;z-index:60;font-weight:600;font-size:14px;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center;animation:pop .16s ease}
+.notice{display:flex;gap:10px;align-items:flex-start;background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px}
+.notice.warn{background:var(--warm-soft)}
+.notice .ico{color:var(--accent);margin-top:2px}.notice.warn .ico{color:var(--warm)}
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:16px;align-items:start}
+.st-row{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(110px,150px) auto;gap:8px;align-items:center;padding:6px 0}
+.st-row input[type=color]{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;padding:2px;background:var(--surface);cursor:pointer}
+.mod-list{display:flex;flex-wrap:wrap;gap:8px}
+.mod{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:9px;padding:5px 6px 5px 11px;font-size:13.5px;font-weight:500}
+.mod button{border:0;background:none;cursor:pointer;color:var(--ink-3);display:grid;place-items:center;width:24px;height:24px;border-radius:6px}
+.mod button:hover{background:var(--surface-3);color:var(--hot)}
+.conn{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.loading{display:grid;place-items:center;min-height:60vh;color:var(--ink-3);gap:12px}
+.spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--surface-3);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Responsive */
+@media (max-width:1200px){.span-7,.span-5{grid-column:span 12}}
+@media (max-width:980px){.span-6{grid-column:span 12}}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .main{padding:18px 14px calc(var(--nav-h) + 28px)}
+  .bottom-nav{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .bottom-nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:var(--nav-h);font-size:11.5px;font-weight:600;color:var(--ink-3);cursor:pointer;position:relative;padding:6px 2px}
+  .bottom-nav button[aria-current="page"]{color:var(--accent)}
+  .bottom-nav .ico{width:22px;height:22px}
+  .bottom-nav .nav-count{position:absolute;top:6px;left:calc(50% + 6px);margin:0;font-size:10.5px;padding:0 6px}
+  .drawer{width:100%}
+}
+@media (max-width:760px){
+  .tablewrap{display:none}
+  .list-cards{display:flex}
+  .page-head .head-actions{width:100%}
+  .page-head .head-actions .btn{flex:1 1 auto}
+  .modal-wrap{place-items:end center;padding:0}
+  .modal{border-radius:18px 18px 0 0;max-height:92vh;width:100%;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .kv>div:nth-child(odd){padding-bottom:0;border-bottom:0;font-size:12.5px;padding-top:10px}
+  .kv>div:nth-child(even){padding-top:2px}
+  .kanban{display:none}
+  .stage-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+  .stage-tabs::-webkit-scrollbar{display:none}
+  .stage-list{display:flex;flex-direction:column;gap:8px}
+  .st-row{grid-template-columns:auto minmax(0,1fr) auto;}
+  .st-row .select{grid-column:2 / 3}
+  .d-head{padding:12px 14px 0}.d-body{padding:14px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-14px;margin-right:-14px;padding:0 14px 2px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none}
+}
+@media (max-width:900px){.toast{bottom:calc(var(--nav-h) + 14px + env(safe-area-inset-bottom,0px))}}
+@media (min-width:761px){.stage-list{display:none}}
+/* Buscar */
+.src-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.src-tab{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 16px;cursor:pointer;text-align:left;flex:1 1 260px;min-width:0;color:var(--ink)}
+.src-tab b{display:block;font-size:15px}.src-tab span{font-size:13px;color:var(--ink-2)}
+.src-tab .ico{width:22px;height:22px;color:var(--accent)}
+.src-tab[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.progress{height:8px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin:10px 0 6px}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px}
+.r-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;display:grid;gap:8px;align-content:start;min-width:0}
+.r-card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.r-card.dup{opacity:.72}
+.r-top{display:flex;gap:10px;align-items:flex-start}
+.r-top>div{flex:1;min-width:0}
+.r-top strong{display:block;font-size:15px;line-height:1.3;overflow-wrap:anywhere}
+.r-facts{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--ink-2)}
+.r-facts span{display:inline-flex;align-items:center;gap:4px;min-width:0;overflow-wrap:anywhere}
+.r-facts .ico{width:14px;height:14px}
+.r-act{font-size:13px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.r-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 12px}
+.r-bar .grow{flex:1 1 220px;min-width:0}
+.r-bar .select{width:auto}
+.cand{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.chk-row{display:flex;gap:10px;align-items:center;min-height:42px;font-size:14px}
+@media (max-width:330px){.m-kv{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.f-row{grid-template-columns:minmax(0,1fr) auto}.f-row .f-track{grid-column:1 / -1;grid-row:2}}
+@media (min-width:1800px){.main{padding-left:56px;padding-right:56px}.dash-grid{gap:20px}}
+</style>
+</head>
+<body>
+<div id="root"><div class="loading"><div class="spinner"></div><div>Cargando tu espacio…</div></div></div>
+<div id="layer"></div>
+<script>
+"use strict";
+/* ============ Utilidades ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = (p = "") => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pad = n => String(n).padStart(2, "0");
+const isoOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayISO = () => isoOf(new Date());
+const addDays = (iso, n) => { const d = iso ? new Date(iso + "T12:00:00") : new Date(); d.setDate(d.getDate() + n); return isoOf(d); };
+const fmtDate = iso => { if (!iso) return ""; const [y, m, d] = String(iso).slice(0, 10).split("-"); return d && m && y ? `${d}/${m}/${y}` : ""; };
+const nf = new Intl.NumberFormat("es-ES");
+const nf1 = new Intl.NumberFormat("es-ES", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const eur = new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\b(s\.?l\.?u?|s\.?a\.?|sociedad limitada|sociedad anonima)\b/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const digits = s => String(s ?? "").replace(/\D/g, "").slice(-9);
+const domainOf = s => { const t = String(s ?? "").trim().toLowerCase(); if (!t) return ""; try { return new URL(t.startsWith("http") ? t : "https://" + t).hostname.replace(/^www\./, ""); } catch { return t.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0]; } };
+const urlOf = s => { const t = String(s ?? "").trim(); if (!t) return ""; return /^https?:\/\//i.test(t) ? t : "https://" + t; };
+const daysBetween = (a, b) => Math.round((new Date(b + "T12:00:00") - new Date(a + "T12:00:00")) / 864e5);
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+
+const ICONS = {
+  today: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/>',
+  dash: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  pipe: '<rect x="3" y="3" width="5" height="18" rx="1.5"/><rect x="10" y="3" width="5" height="12" rx="1.5"/><rect x="17" y="3" width="4" height="7" rx="1.5"/>',
+  settings: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  download: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>', upload: '<path d="M12 21V9M7 14l5-5 5 5M5 3h14"/>',
+  phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+  mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>', filter: '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+  tag: '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  edit: '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', info: '<circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/>',
+  save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8M21 3v5h-5"/>', user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>', star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/>', radar: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12 19 5"/>', map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>', doc: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/>', list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'
+};
+const ico = (n, cls = "") => `<svg class="ico ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+
+/* ============ Modelo ============ */
+const SRC = {
+  verified: { label: "Verificado", short: "Verif." },
+  api: { label: "Procedente de API", short: "API" },
+  estimated: { label: "Estimado", short: "Est." },
+  manual: { label: "Introducido manualmente", short: "Manual" },
+  calc: { label: "Calculado a partir de otro dato", short: "Calc." }
+};
+const FIELDS = [
+  { k: "name", label: "Empresa" }, { k: "cif", label: "CIF/NIF" },
+  { k: "sector", label: "Sector" }, { k: "cnae", label: "CNAE" },
+  { k: "province", label: "Provincia" }, { k: "municipality", label: "Municipio" },
+  { k: "address", label: "Dirección" }, { k: "activity", label: "Objeto social" }, { k: "capital", label: "Capital social" }, { k: "foundedAt", label: "Fecha de constitución", type: "date" },
+  { k: "employees", label: "Empleados", type: "number" },
+  { k: "rating", label: "Valoración Google", type: "number", step: "0.1" },
+  { k: "reviews", label: "Nº reseñas", type: "number" },
+  { k: "phone", label: "Teléfono", type: "tel" }, { k: "email", label: "Email", type: "email" },
+  { k: "web", label: "Página web", type: "url" }, { k: "social", label: "Redes sociales" }, { k: "hours", label: "Horario" }, { k: "services", label: "Servicios" }, { k: "brand", label: "Cadena / marca" },
+  { k: "onlineBooking", label: "Reservas online", type: "bool" }
+];
+const FIELD_BY = Object.fromEntries(FIELDS.map(f => [f.k, f]));
+
+const DEFAULT_STATUSES = [
+  { id: "nuevo", label: "Nuevo", color: "#64748B", stage: 0 },
+  { id: "por_contactar", label: "Por contactar", color: "#0EA5E9", stage: 0 },
+  { id: "contactado", label: "Contactado", color: "#2350F5", stage: 1 },
+  { id: "interesado", label: "Interesado", color: "#7657F2", stage: 2 },
+  { id: "reunion_pendiente", label: "Reunión pendiente", color: "#A855F7", stage: 2 },
+  { id: "reunion_realizada", label: "Reunión realizada", color: "#C026D3", stage: 2 },
+  { id: "demo_pendiente", label: "Demo pendiente", color: "#E99A0C", stage: 2, demoPending: true },
+  { id: "demo_realizada", label: "Demo realizada", color: "#F97316", stage: 3 },
+  { id: "en_pruebas", label: "En pruebas", color: "#14B8A6", stage: 4, trial: true },
+  { id: "negociacion", label: "Negociación", color: "#0891B2", stage: 4 },
+  { id: "contratado", label: "Contratado", color: "#0F9D63", stage: 5 },
+  { id: "cliente", label: "Cliente", color: "#15803D", stage: 5 },
+  { id: "no_interesado", label: "No interesado", color: "#94A3B8", stage: -1 },
+  { id: "no_contactar", label: "No contactar", color: "#475569", stage: -1 },
+  { id: "perdido", label: "Perdido", color: "#EF4438", stage: -1 }
+];
+const STAGES = [
+  { n: 0, label: "Nuevos" }, { n: 1, label: "Contactados" }, { n: 2, label: "Interesados" },
+  { n: 3, label: "Demo" }, { n: 4, label: "Prueba" }, { n: 5, label: "Contratados" }
+];
+const STAGE_OPTS = [...STAGES.map(s => ({ n: s.n, label: s.label })), { n: -1, label: "Cerrado sin venta" }];
+const DEFAULT_TAGS = [
+  ["Restaurante", "#EF4438"], ["Bar", "#E99A0C"], ["Cafetería", "#A16207"], ["Alta oportunidad", "#0F9D63"],
+  ["Prioridad", "#DC2626"], ["Contactar esta semana", "#2350F5"], ["Demo", "#F97316"], ["Prueba", "#14B8A6"], ["Cliente", "#15803D"]
+].map(([label, color]) => ({ id: uid("t"), label, color }));
+const DEFAULT_SERVICE = {
+  name: "GastroClick Management",
+  summary: "Plataforma de gestión integral para hostelería.",
+  modules: ["Comandas mediante QR desde la mesa", "Pedidos", "Inventario", "Insumos", "Escandallos", "Fichajes de empleados", "Planning", "Reservas", "Gestión general del local"],
+  targetCnae: ["56", "55"],
+  targetKeywords: ["restaur", "bar", "cafet", "comidas", "bebidas", "hostel", "taberna", "cervecer", "hotel", "gastro", "pizzer", "marisq", "asador", "brasería", "tapas"]
+};
+const INTERACTION_TYPES = ["Llamada", "Email", "WhatsApp", "Visita", "Reunión", "Demo", "Prueba", "Nota", "Estado"];
+const CHANNELS = ["Teléfono", "Email", "WhatsApp", "Visita presencial", "Redes sociales", "Formulario web", "Recomendación"];
+
+function defaultSavedSearches() {
+  return [
+    { id: uid("s"), name: "Restaurantes nuevos Madrid", filters: { sector: "restaur", province: "Madrid", ageMax: "2" } },
+    { id: uid("s"), name: "Restaurantes con más de 100 reseñas", filters: { sector: "restaur", reviewsMin: "100" } },
+    { id: uid("s"), name: "Hostelería creada en los últimos 30 días", filters: { cnae: "56", foundedFrom: "@-30" } },
+    { id: uid("s"), name: "Prospectos con potencial > 75", filters: { scoreMin: "76", prospect: "yes" } },
+    { id: uid("s"), name: "Interesadas pendientes de demo", filters: { statuses: ["interesado", "demo_pendiente"] } },
+    { id: uid("s"), name: "Clientes en periodo de prueba", filters: { statuses: ["en_pruebas"] } }
+  ];
+}
+
+const S = {
+  settings: null, companies: new Map(),
+  status: null, search: null, view: "hoy", filters: {}, sort: { key: "score", dir: "desc" }, page: 1, selected: new Set(),
+  showFilters: false, openId: null, tab: "resumen", mobileStage: null, backend: "local"
+};
+const PER_PAGE = 50;
+
+/* Acceso a campos */
+const val = (c, k) => { const x = c.f?.[k]; if (!x || x.v === "" || x.v === null || x.v === undefined) return null; return x.v; };
+const srcOf = (c, k) => c.f?.[k]?.src || null;
+const ageYears = c => { const d = val(c, "foundedAt"); if (!d) return null; return (Date.now() - new Date(d + "T12:00:00")) / (365.25 * 864e5); };
+const sizeOf = c => { const e = val(c, "employees"); if (e === null) return null; const n = +e; return n < 10 ? "Microempresa" : n < 50 ? "Pequeña" : n < 250 ? "Mediana" : "Grande"; };
+const statusById = id => S.settings.statuses.find(s => s.id === id) || null;
+const stageOf = c => { const s = statusById(c.crm?.status); return s ? s.stage : null; };
+const isProspect = c => !!c.crm?.status;
+const tagById = id => S.settings.tags.find(t => t.id === id);
+const fmtAge = y => { if (y === null) return null; const m = Math.max(1, Math.round(y * 12)); return y < 1 ? (m === 1 ? "1 mes" : `${m} meses`) : `${nf1.format(y).replace(",0", "")} años`; };
+
+function newCompany(fields = {}, src = "manual", origin = "Alta manual") {
+  const c = { id: uid("c"), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), f: {}, crm: { tags: [] }, contacts: [], interactions: [] };
+  for (const [k, v] of Object.entries(fields)) if (FIELD_BY[k] && v !== "" && v !== null && v !== undefined) c.f[k] = { v, src, origin, at: todayISO() };
+  return c;
+}
+
+/* ============ Puntuación "Potencial comercial" ============ */
+// Días de apertura a partir del horario de OpenStreetMap ("Mo-Su 12:00-24:00", "Tu-Sa ...; Su ...")
+function daysOpen(h) {
+  const t = String(h); if (/24\/7/.test(t)) return 7;
+  const D = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"], on = new Set();
+  for (const part of t.split(";")) {
+    if (/\boff\b|closed/i.test(part)) continue;
+    const m = part.match(/^\s*((?:Mo|Tu|We|Th|Fr|Sa|Su)(?:\s*[-,]\s*(?:Mo|Tu|We|Th|Fr|Sa|Su))*)/); if (!m) continue;
+    for (const seg of m[1].split(",")) { const [a, b] = seg.split("-").map(x => D.indexOf(x.trim())); if (a < 0) continue; if (b === undefined || b < 0) on.add(a); else for (let i = a; ; i = (i + 1) % 7) { on.add(i); if (i === b) break; } }
+  }
+  return on.size || null;
+}
+function serviceHas(svc, re) { return svc.modules.some(m => re.test(norm(m))); }
+function scoreOf(c) {
+  const svc = S.settings.service, F = [];
+  const add = (label, pts, max, note) => F.push({ label, pts, max, note, kind: pts === null ? "q" : pts >= max * 0.6 ? "plus" : "minus" });
+  const cnae = val(c, "cnae"), sector = val(c, "sector"), activity = val(c, "activity");
+  if (cnae || sector || activity) {
+    const cm = cnae && svc.targetCnae.some(p => p && String(cnae).startsWith(p));
+    const sm = [sector, activity].some(x => x && svc.targetKeywords.some(k => k && norm(x).includes(norm(k))));
+    if (cm) add("Compatibilidad del sector", 25, 25, `CNAE ${cnae} dentro de los sectores objetivo del servicio.`);
+    else if (sm) add("Compatibilidad del sector", 21, 25, sector ? `El sector "${sector}" encaja con el servicio.` : "El objeto social registrado encaja con el servicio.");
+    else add("Compatibilidad del sector", 3, 25, "Sector fuera del público objetivo configurado.");
+  } else add("Compatibilidad del sector", null, 25, "Sin sector ni CNAE.");
+  const y = ageYears(c);
+  if (y !== null) {
+    if (y < 1) add("Antigüedad", 10, 10, "Negocio muy reciente: probablemente aún está eligiendo sus herramientas.");
+    else if (y < 3) add("Antigüedad", 9, 10, "Negocio joven: etapa habitual de ordenar procesos.");
+    else if (y < 10) add("Antigüedad", 6, 10, "Negocio asentado.");
+    else add("Antigüedad", 4, 10, "Negocio consolidado: puede tener sistemas ya implantados.");
+  } else add("Antigüedad", null, 10, "Sin fecha de constitución.");
+  const e = val(c, "employees");
+  if (e !== null) {
+    const n = +e;
+    if (n >= 5 && n < 50) add("Tamaño del equipo", 15, 15, `${n} empleados: tamaño en el que coordinar turnos y tareas ya pesa.`);
+    else if (n >= 50 && n < 250) add("Tamaño del equipo", 11, 15, `${n} empleados: buen tamaño, decisión más lenta.`);
+    else if (n >= 250) add("Tamaño del equipo", 7, 15, "Gran empresa: ciclos de venta largos.");
+    else if (n >= 3) add("Tamaño del equipo", 8, 15, `${n} empleados: equipo pequeño.`);
+    else add("Tamaño del equipo", 3, 15, "Equipo muy pequeño: menos necesidad de gestión de personal.");
+  } else add("Tamaño del equipo", null, 15, "Sin número de empleados.");
+  const r = val(c, "reviews");
+  if (r !== null) {
+    const n = +r;
+    const p = n >= 300 ? 15 : n >= 150 ? 13 : n >= 50 ? 10 : n >= 10 ? 6 : 2;
+    add("Volumen de reseñas", p, 15, `${nf.format(n)} reseñas: ${n >= 150 ? "mucha afluencia de clientes" : n >= 50 ? "actividad notable" : "actividad visible baja"}.`);
+  } else add("Volumen de reseñas", null, 15, "Sin número de reseñas.");
+  const rt = val(c, "rating");
+  if (rt !== null) {
+    const n = +rt;
+    add("Valoración", n >= 4.5 ? 5 : n >= 4 ? 4 : n >= 3.5 ? 3 : 2, 5, n >= 4 ? `${nf1.format(n)}★: negocio cuidado, abierto a mejorar.` : `${nf1.format(n)}★: posible margen de mejora en el servicio.`);
+  } else add("Valoración", null, 5, "Sin valoración.");
+  const web = val(c, "web"), soc = val(c, "social");
+  if (web || soc) add("Presencia digital", web && soc ? 10 : 7, 10, web && soc ? "Tiene web y redes: perfil digital activo." : web ? "Tiene web." : "Tiene redes sociales.");
+  else add("Presencia digital", null, 10, "Sin datos de web ni redes.");
+  const ob = val(c, "onlineBooking");
+  if (ob !== null) {
+    const hasRes = serviceHas(svc, /reserv/);
+    if (ob === true || ob === "true") add("Reservas online", 10, 10, "Ya usa reservas online: acostumbrado a herramientas digitales.");
+    else add("Reservas online", hasRes ? 6 : 4, 10, hasRes ? "No se detectan reservas online: hueco que cubre tu módulo de reservas." : "No se detectan reservas online.");
+  } else add("Reservas online", null, 10, "No comprobado.");
+  if (e !== null || r !== null) {
+    const ne = e === null ? 0 : +e, nr = r === null ? 0 : +r;
+    const p = ne >= 8 || nr >= 200 ? 10 : ne >= 4 || nr >= 60 ? 7 : 3;
+    add("Complejidad aparente", p, 10, p >= 10 ? "Volumen alto: muchos pedidos, turnos y stock que coordinar." : p >= 7 ? "Complejidad media." : "Operativa sencilla.");
+  } else add("Complejidad aparente", null, 10, "Sin datos de volumen.");
+  // Señales públicas del local (OpenStreetMap)
+  const ph = val(c, "phone"), em = val(c, "email"), hours = val(c, "hours"), services = val(c, "services"), brand = val(c, "brand");
+  if (ph || em) add("Contacto directo", 10, 10, ph && em ? "Tiene teléfono y email públicos." : ph ? "Tiene teléfono público." : "Tiene email público.");
+  else add("Contacto directo", 2, 10, "Sin teléfono ni email públicos: habrá que visitarlo o buscar el contacto.");
+  if (brand) add("Independiente o cadena", 2, 10, `Pertenece a la marca "${brand}": las cadenas suelen usar el sistema central de la marca.`);
+  else if (cnae || sector || activity) add("Independiente o cadena", 8, 10, "No consta marca de cadena: probablemente es un negocio independiente, que decide por sí mismo.");
+  if (hours) { const d = daysOpen(hours); if (d !== null) add("Días de apertura", d >= 6 ? 10 : d >= 5 ? 7 : 4, 10, d >= 6 ? `Abre ${d === 7 ? "todos los días" : "6 días a la semana"}: varios turnos de personal que coordinar.` : `Abre ${d} días a la semana.`); }
+  if (services) { const n = services.split(",").filter(Boolean).length; add("Servicios", n >= 2 ? 10 : 7, 10, `Ofrece ${services.toLowerCase()}: más pedidos y mesas que gestionar.`); }
+  const growth = y !== null && r !== null && y < 3 && (+r / Math.max(y, 0.25)) >= 80;
+  if (growth) F.push({ label: "Señales de crecimiento", pts: 5, max: 5, note: "Muchas reseñas en poco tiempo: crecimiento rápido.", kind: "plus", bonus: true });
+  const avail = F.filter(f => f.pts !== null && !f.bonus);
+  const maxAll = F.filter(f => !f.bonus).reduce((a, f) => a + f.max, 0);
+  const maxAv = avail.reduce((a, f) => a + f.max, 0);
+  const earned = avail.reduce((a, f) => a + f.pts, 0) + (growth ? 5 : 0);
+  if (!avail.length) return { score: null, conf: 0, factors: F, signals: 0, total: F.length };
+  const raw = clamp(earned / maxAv * 100, 0, 100), conf = maxAv / maxAll;
+  return { score: Math.round(clamp(50 + (raw - 50) * (0.5 + 0.5 * conf), 0, 100)), conf, factors: F, signals: avail.length, total: F.filter(f => !f.bonus).length };
+}
+const scoreCache = new Map();
+function score(c) { const k = c.id + "|" + c.updatedAt + "|" + S.settings.svcRev; let v = scoreCache.get(k); if (!v) { v = scoreOf(c); scoreCache.set(k, v); } return v; }
+const scoreCls = n => n === null ? "" : n >= 70 ? "hi" : n >= 45 ? "mid" : "lo";
+function scoreHTML(c) {
+  const s = score(c).score;
+  if (s === null) return `<span class="na">Sin datos</span>`;
+  return `<span class="score s-${scoreCls(s)}"><span class="score-bar"><i class="bg-${scoreCls(s)}" style="width:${s}%"></i></span>${s}</span>`;
+}
+
+/* ¿Por qué contactar? */
+function whyContact(c) {
+  const svc = S.settings.service, sc = score(c), parts = [], opps = [];
+  const y = ageYears(c), e = val(c, "employees"), rt = val(c, "rating"), rv = val(c, "reviews"), ob = val(c, "onlineBooking"), web = val(c, "web"), soc = val(c, "social");
+  const sector = norm(val(c, "sector") || ""), isFood = /restaur|bar|cafet|taberna|asador|pizz|marisq|cocina|gastro|tapas|brasa/.test(sector) || String(val(c, "cnae") || "").startsWith("56");
+  if (y !== null) parts.push(y < 2 ? `Negocio reciente (constituido hace ${fmtAge(y)})` : `Negocio con ${fmtAge(y)} de actividad`);
+  if (e !== null) parts.push(`${srcOf(c, "employees") === "estimated" ? "aproximadamente " : ""}${e} empleados`);
+  if (rt !== null && rv !== null) parts.push(`${nf1.format(rt)}★ y ${nf.format(rv)} reseñas`);
+  else if (rv !== null) parts.push(`${nf.format(rv)} reseñas`); else if (rt !== null) parts.push(`${nf1.format(rt)}★`);
+  const extra = [];
+  if (ob === true || ob === "true") extra.push("dispone de reservas online");
+  const svcs = val(c, "services"), hrs = val(c, "hours"), dOpen = hrs ? daysOpen(hrs) : null;
+  if (svcs) extra.push("ofrece " + svcs.toLowerCase());
+  if (dOpen !== null && dOpen >= 6) extra.push(dOpen === 7 ? "abre todos los días" : "abre 6 días a la semana");
+  if (web && soc) extra.push("tiene una presencia digital activa"); else if (web) extra.push("tiene página web");
+  let summary = parts.length ? parts.join(", ").replace(/, ([^,]*)$/, " y $1") + "." : "";
+  if (extra.length) summary += (summary ? " " : "") + extra.join(" y ").replace(/^./, m => m.toUpperCase()) + ".";
+  if (!summary) summary = "Hay muy pocos datos sobre este negocio. Completa la ficha para afinar el análisis.";
+  const M = re => svc.modules.find(m => re.test(norm(m)));
+  let m;
+  if ((m = M(/comand|qr|pedido/)) && ((rv !== null && +rv >= 80) || (e !== null && +e >= 5))) opps.push({ mod: m, what: "centralizar comandas y pedidos desde la mesa", arg: "reducir la carga de trabajo de los camareros y agilizar el servicio en horas punta" });
+  if ((m = M(/fich|planning|turno|emplead/)) && e !== null && +e >= 5) opps.push({ mod: m, what: `organizar fichajes y planning de un equipo de ${e} personas`, arg: "simplificar turnos y fichajes y evitar errores en horas trabajadas" });
+  if ((m = M(/reserv/)) && ob !== null) opps.push(ob === true || ob === "true" ? { mod: m, what: "centralizar las reservas que ya recibe online junto al resto de la gestión", arg: "tener reservas, sala y equipo en un único sistema" } : { mod: m, what: "empezar a recibir reservas directas online", arg: "captar reservas propias sin depender del teléfono" });
+  const sv = norm(val(c, "services") || ""), hr = val(c, "hours"), dop = hr ? daysOpen(hr) : null, brandV = val(c, "brand");
+  const has = re => opps.some(o => re.test(norm(o.mod)));
+  if (!brandV) {
+    if (!has(/comand|qr|pedido/) && (m = M(/comand|qr|pedido/)) && (sv.includes("terraza") || /restaur|bar|cafet|cervec|taberna|pub/.test(sector))) opps.push({ mod: m, what: sv.includes("terraza") ? "tomar comandas por QR en la terraza sin que el camarero tenga que ir y volver" : "tomar comandas por QR desde la mesa", arg: "reducir la carga de trabajo de los camareros y agilizar el servicio en horas punta" });
+    if (!has(/pedido/) && (m = M(/pedido/)) && /llevar|domicilio/.test(sv)) opps.push({ mod: m, what: "centralizar los pedidos para llevar y a domicilio", arg: "tener todos los pedidos (sala, llevar y domicilio) en un solo sitio" });
+    if (!has(/fich|planning/) && (m = M(/fich|planning|turno/)) && dop !== null && dop >= 6) opps.push({ mod: m, what: "organizar turnos y fichajes de un equipo que trabaja casi todos los días", arg: "simplificar el planning de turnos y el registro horario obligatorio" });
+    if (!has(/reserv/) && (m = M(/reserv/)) && sv.includes("reservas")) opps.push({ mod: m, what: "centralizar las reservas que ya acepta", arg: "tener reservas, sala y equipo en un único sistema" });
+  }
+  if ((m = M(/inventar|insumo|escandall|stock/)) && isFood) opps.push({ mod: m, what: "controlar inventario, insumos y escandallos", arg: "conocer el coste real de cada plato y reducir mermas" });
+  if (!opps.length && sc.score !== null && sc.factors[0].kind === "plus") opps.push({ mod: svc.modules[0], what: `centralizar la gestión con ${svc.name}`, arg: `centralizar la gestión del negocio con ${svc.name}` });
+  return { sc, summary, opps, arg: opps[0]?.arg || null };
+}
+</script>
+<script>
+/* ============ Almacenamiento en el navegador (IndexedDB, con respaldo en localStorage) ============ */
+const LS_KEY = "radar-comercial-v1";
+const IDB = {
+  db: null,
+  open() {
+    return new Promise(res => {
+      try {
+        const rq = indexedDB.open("radar-comercial", 1);
+        rq.onupgradeneeded = () => { const d = rq.result; d.createObjectStore("kv"); d.createObjectStore("companies", { keyPath: "id" }); d.createObjectStore("cache"); };
+        rq.onsuccess = () => { this.db = rq.result; res(true); };
+        rq.onerror = () => res(false); rq.onblocked = () => res(false);
+      } catch (e) { res(false); }
+    });
+  },
+  tx(store, mode, fn) {
+    return new Promise((res, rej) => { const t = this.db.transaction(store, mode); const st = t.objectStore(store); const out = fn(st); t.oncomplete = () => res(out && out.result !== undefined ? out.result : out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); });
+  },
+  get(store, key) { return new Promise((res, rej) => { const r = this.db.transaction(store).objectStore(store).get(key); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  all(store) { return new Promise((res, rej) => { const r = this.db.transaction(store).objectStore(store).getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => rej(r.error); }); }
+};
+const Store = {
+  mode: "local",
+  async init() {
+    if (await IDB.open()) {
+      try {
+        this.mode = "idb";
+        let settings = await IDB.get("kv", "settings"), comps = await IDB.all("companies");
+        // Migra datos antiguos guardados en localStorage
+        if (!settings && !comps.length) { try { const j = JSON.parse(localStorage.getItem(LS_KEY) || "null"); if (j) { settings = j.settings; comps = j.companies || []; await IDB.tx("companies", "readwrite", st => comps.forEach(c => st.put(c))); if (settings) await IDB.tx("kv", "readwrite", st => st.put(settings, "settings")); } } catch (_) {} }
+        S.backend = "browser"; return { settings, comps };
+      } catch (e) { this.mode = "local"; }
+    }
+    S.backend = "browser";
+    try { const raw = localStorage.getItem(LS_KEY); if (raw) { const j = JSON.parse(raw); return { settings: j.settings, comps: j.companies || [] }; } } catch (e) {}
+    return { settings: null, comps: [] };
+  },
+  _local() { try { localStorage.setItem(LS_KEY, JSON.stringify({ settings: S.settings, companies: [...S.companies.values()] })); } catch (e) { toast("El navegador no tiene espacio: exporta una copia y borra empresas que no uses"); } },
+  _err(e) { console.error(e); toast("No se pudo guardar el último cambio"); },
+  saveCompany(c) {
+    c.updatedAt = new Date().toISOString(); S.companies.set(c.id, c);
+    if (this.mode !== "idb") return this._local();
+    const body = JSON.parse(JSON.stringify(c));
+    return IDB.tx("companies", "readwrite", st => st.put(body)).catch(this._err);
+  },
+  deleteCompany(id) {
+    S.companies.delete(id); S.selected.delete(id);
+    if (this.mode !== "idb") return this._local();
+    return IDB.tx("companies", "readwrite", st => st.delete(id)).catch(this._err);
+  },
+  saveSettings() {
+    if (this.mode !== "idb") return this._local();
+    const body = JSON.parse(JSON.stringify(S.settings));
+    return IDB.tx("kv", "readwrite", st => st.put(body, "settings")).catch(this._err);
+  },
+  async saveMany(list) {
+    list.forEach(c => { c.updatedAt = new Date().toISOString(); S.companies.set(c.id, c); });
+    if (this.mode !== "idb") return this._local();
+    const bodies = list.map(c => JSON.parse(JSON.stringify(c)));
+    return IDB.tx("companies", "readwrite", st => bodies.forEach(b => st.put(b))).catch(this._err);
+  },
+  async cacheGet(k, ttl) { if (this.mode !== "idb") return null; try { const v = await IDB.get("cache", k); return v && Date.now() - v.at < ttl ? v.data : null; } catch (_) { return null; } },
+  async cacheSet(k, data) { if (this.mode !== "idb") return; try { await IDB.tx("cache", "readwrite", st => st.put({ at: Date.now(), data }, k)); } catch (_) {} },
+  async cacheClear() { if (this.mode === "idb") try { await IDB.tx("cache", "readwrite", st => st.clear()); } catch (_) {} }
+};
+
+/* ============ Deduplicación y fusión ============ */
+function findDuplicate(inc, exclude) {
+  const cif = norm(val(inc, "cif")), dom = domainOf(val(inc, "web")), ph = digits(val(inc, "phone"));
+  const nm = norm(val(inc, "name")), mu = norm(val(inc, "municipality")), ad = norm(val(inc, "address"));
+  for (const c of S.companies.values()) {
+    if (c.id === exclude) continue;
+    if (inc.id && c.id === inc.id) return c;
+    if (inc.ext?.osmId && c.ext?.osmId === inc.ext.osmId) return c;
+    if (inc.ext?.placeId && c.ext?.placeId === inc.ext.placeId) return c;
+    if (inc.ext?.bormeId && c.ext?.bormeId === inc.ext.bormeId) return c;
+    if (cif && norm(val(c, "cif")) === cif) return c;
+    if (dom && domainOf(val(c, "web")) === dom) return c;
+    if (ph && ph.length === 9 && digits(val(c, "phone")) === ph) return c;
+    if (nm && norm(val(c, "name")) === nm && (!mu || !norm(val(c, "municipality")) || norm(val(c, "municipality")) === mu)) return c;
+    if (ad && ad.length > 10 && norm(val(c, "address")) === ad) return c;
+  }
+  return null;
+}
+/* Solo actualiza datos externos; nunca toca CRM, notas, contactos ni historial */
+function mergeExternal(target, incoming) {
+  let changed = false;
+  for (const f of FIELDS) {
+    const x = incoming.f?.[f.k];
+    if (!x || x.v === "" || x.v === null || x.v === undefined) continue;
+    const cur = target.f[f.k];
+    if (!cur || cur.v !== x.v || cur.src !== x.src) { target.f[f.k] = { ...x }; changed = true; }
+  }
+  if (incoming.ext) for (const [k, v] of Object.entries(incoming.ext)) if (v && target.ext?.[k] !== v) { target.ext = { ...(target.ext || {}), [k]: v }; changed = true; }
+  return changed;
+}
+function mergeRelations(target, incoming) {
+  let changed = false;
+  const ids = new Set(target.interactions.map(i => i.id));
+  for (const i of incoming.interactions || []) if (i && !ids.has(i.id)) { target.interactions.push(i); changed = true; }
+  const cids = new Set(target.contacts.map(i => i.id));
+  for (const k of incoming.contacts || []) if (k && !cids.has(k.id)) { target.contacts.push(k); changed = true; }
+  return changed;
+}
+function sanitizeCompany(raw) {
+  const c = newCompany();
+  if (raw.id && /^c[a-z0-9]+$/i.test(raw.id)) c.id = raw.id;
+  for (const f of FIELDS) {
+    const x = raw.f?.[f.k];
+    if (x && x.v !== undefined && x.v !== null && x.v !== "") c.f[f.k] = { v: x.v, src: SRC[x.src] ? x.src : "manual", origin: String(x.origin || "Importación"), at: x.at || todayISO() };
+  }
+  if (raw.crm && typeof raw.crm === "object") c.crm = { ...raw.crm, tags: Array.isArray(raw.crm.tags) ? raw.crm.tags : [] };
+  if (Array.isArray(raw.contacts)) c.contacts = raw.contacts.filter(Boolean).map(k => ({ id: k.id || uid("p"), name: k.name || "", role: k.role || "", phone: k.phone || "", email: k.email || "" }));
+  if (Array.isArray(raw.interactions)) c.interactions = raw.interactions.filter(Boolean).map(i => ({ id: i.id || uid("i"), date: i.date || todayISO(), type: i.type || "Nota", text: i.text || "" }));
+  if (raw.demo) c.demo = true;
+  if (raw.ext && typeof raw.ext === "object") c.ext = { osmId: raw.ext.osmId || undefined, osmUrl: raw.ext.osmUrl || undefined, placeId: raw.ext.placeId || undefined, mapsUrl: raw.ext.mapsUrl || undefined, bormeId: raw.ext.bormeId || undefined, bormeUrl: raw.ext.bormeUrl || undefined };
+  if (raw.createdAt) c.createdAt = raw.createdAt;
+  return c;
+}
+async function importCompanies(list, label) {
+  let created = 0, updated = 0, same = 0; const toSave = [];
+  for (const raw of list) {
+    const inc = sanitizeCompany(raw);
+    if (!val(inc, "name")) continue;
+    const dup = findDuplicate(inc);
+    if (dup) {
+      const a = mergeExternal(dup, inc), b = mergeRelations(dup, inc);
+      if (!dup.crm.status && inc.crm.status) { dup.crm = { ...inc.crm, tags: [...new Set([...(dup.crm.tags || []), ...(inc.crm.tags || [])])] }; }
+      if (a || b) { updated++; toSave.push(dup); } else same++;
+    } else { S.companies.set(inc.id, inc); toSave.push(inc); created++; }
+  }
+  await Store.saveMany(toSave);
+  toast(`${label}: ${created} nuevas, ${updated} actualizadas, ${same} sin cambios`);
+  render();
+}
+</script>
+<script>
+/* ============ Filtros y orden ============ */
+const resolveDate = v => { if (!v) return ""; const m = String(v).match(/^@(-?\d+)$/); return m ? addDays(todayISO(), +m[1]) : v; };
+function matches(c, F) {
+  const T = todayISO();
+  if (F.q) { const q = norm(F.q); const hay = norm([val(c, "name"), val(c, "cif"), val(c, "municipality"), val(c, "address"), val(c, "sector"), c.crm?.contactPerson].join(" ")); if (!q.split(" ").every(w => hay.includes(w))) return false; }
+  if (F.province && norm(val(c, "province")) !== norm(F.province)) return false;
+  if (F.municipality && !norm(val(c, "municipality")).includes(norm(F.municipality))) return false;
+  if (F.sector && !norm(val(c, "sector")).includes(norm(F.sector))) return false;
+  if (F.cnae && !String(val(c, "cnae") || "").startsWith(F.cnae.trim())) return false;
+  const fd = val(c, "foundedAt");
+  if (F.foundedFrom && (!fd || fd < resolveDate(F.foundedFrom))) return false;
+  if (F.foundedTo && (!fd || fd > resolveDate(F.foundedTo))) return false;
+  const y = ageYears(c);
+  if (F.ageMin !== undefined && F.ageMin !== "" && (y === null || y < +F.ageMin)) return false;
+  if (F.ageMax !== undefined && F.ageMax !== "" && (y === null || y > +F.ageMax)) return false;
+  const e = val(c, "employees");
+  if (F.empMin !== undefined && F.empMin !== "" && (e === null || +e < +F.empMin)) return false;
+  if (F.empMax !== undefined && F.empMax !== "" && (e === null || +e > +F.empMax)) return false;
+  if (F.size && sizeOf(c) !== F.size) return false;
+  if (F.ratingMin && (val(c, "rating") === null || +val(c, "rating") < +F.ratingMin)) return false;
+  if (F.reviewsMin && (val(c, "reviews") === null || +val(c, "reviews") < +F.reviewsMin)) return false;
+  if (F.web === "yes" && !val(c, "web")) return false;
+  if (F.web === "no" && val(c, "web")) return false;
+  const ob = val(c, "onlineBooking");
+  if (F.booking === "yes" && !(ob === true || ob === "true")) return false;
+  if (F.booking === "no" && !(ob === false || ob === "false")) return false;
+  if (F.prospect === "yes" && !isProspect(c)) return false;
+  if (F.prospect === "no" && isProspect(c)) return false;
+  if (F.statuses && F.statuses.length && !F.statuses.includes(c.crm?.status)) return false;
+  if (F.tag && !(c.crm?.tags || []).includes(F.tag)) return false;
+  if (F.scoreMin && (score(c).score === null || score(c).score < +F.scoreMin)) return false;
+  const nd = c.crm?.nextActionDate;
+  if (F.follow === "overdue" && !(nd && nd < T)) return false;
+  if (F.follow === "today" && nd !== T) return false;
+  if (F.follow === "week" && !(nd && nd >= T && nd <= addDays(T, 7))) return false;
+  return true;
+}
+const SORTERS = {
+  name: c => norm(val(c, "name")), sector: c => norm(val(c, "sector") || val(c, "cnae")), province: c => norm(val(c, "province")),
+  municipality: c => norm(val(c, "municipality")), foundedAt: c => val(c, "foundedAt"), age: c => ageYears(c),
+  employees: c => val(c, "employees") === null ? null : +val(c, "employees"), rating: c => val(c, "rating") === null ? null : +val(c, "rating"),
+  reviews: c => val(c, "reviews") === null ? null : +val(c, "reviews"), phone: c => val(c, "phone"), email: c => val(c, "email"), web: c => domainOf(val(c, "web")) || null,
+  score: c => score(c).score, status: c => { const s = statusById(c.crm?.status); return s ? S.settings.statuses.indexOf(s) : null; },
+  lastContact: c => c.crm?.lastContact || null, nextAction: c => c.crm?.nextAction || null, nextActionDate: c => c.crm?.nextActionDate || null
+};
+function filtered() {
+  const F = S.filters, list = [...S.companies.values()].filter(c => matches(c, F));
+  const get = SORTERS[S.sort.key] || SORTERS.score, dir = S.sort.dir === "asc" ? 1 : -1;
+  return list.sort((a, b) => {
+    const x = get(a), y = get(b);
+    if (x === null || x === undefined || x === "") return (y === null || y === undefined || y === "") ? 0 : 1;
+    if (y === null || y === undefined || y === "") return -1;
+    return (x < y ? -1 : x > y ? 1 : 0) * dir;
+  });
+}
+const activeFilterCount = () => Object.entries(S.filters).filter(([k, v]) => k !== "q" && (Array.isArray(v) ? v.length : v !== "" && v !== undefined)).length;
+
+/* ============ Guardar archivos ============ */
+async function saveFile(filename, blob) {
+  try {
+    const dl = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads") : null;
+    if (dl) {
+      try { await dl.save({ filename, data: blob }); toast("Archivo guardado"); }
+      catch (e) { if (e && e.code === "declined") return; if (e && e.code === "rate_limited") toast("Hay otra descarga pendiente de confirmar"); else toast("No se pudo guardar el archivo en esta vista"); }
+      return;
+    }
+  } catch (e) {}
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+const stamp = () => todayISO().replace(/-/g, "");
+
+/* ============ Exportación ============ */
+function exportJSON(list) {
+  const data = {
+    format: "radar-comercial", version: 1, exportedAt: new Date().toISOString(),
+    service: S.settings.service, statuses: S.settings.statuses, tags: S.settings.tags,
+    companies: list.map(c => ({ ...c, computed: { score: score(c).score, scoreFactors: score(c).factors, ageYears: ageYears(c), size: sizeOf(c) } }))
+  };
+  saveFile(`prospeccion-${stamp()}.json`, new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+}
+function exportXLSX(list) {
+  if (!window.XLSX) { toast("La librería de Excel no se ha cargado. Recarga la página."); return; }
+  const D = iso => iso ? new Date(String(iso).slice(0, 10) + "T00:00:00") : null;
+  const stl = c => statusById(c.crm?.status)?.label || "Sin prospectar";
+  const obTxt = v => v === true || v === "true" ? "Sí" : v === false || v === "false" ? "No" : "No disponible";
+  const srcTxt = c => FIELDS.filter(f => c.f[f.k]).map(f => `${f.label}: ${SRC[c.f[f.k].src]?.label || ""}${c.f[f.k].origin ? " (" + c.f[f.k].origin + ")" : ""}`).join("; ");
+  const T = todayISO();
+  const sheet = (header, rows, opts = {}) => {
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows], { cellDates: true, dateNF: "dd/mm/yyyy" });
+    const ref = XLSX.utils.decode_range(ws["!ref"]);
+    for (let R = 1; R <= ref.e.r; R++) for (let C = 0; C <= ref.e.c; C++) {
+      const cell = ws[XLSX.utils.encode_cell({ r: R, c: C })]; if (!cell) continue;
+      if (cell.v instanceof Date || cell.t === "d") cell.z = "dd/mm/yyyy";
+      if (opts.money && opts.money.includes(C) && cell.t === "n") cell.z = '#,##0 "€"';
+      if (opts.decimal && opts.decimal.includes(C) && cell.t === "n") cell.z = "0.0";
+      if (opts.text && opts.text.includes(C)) { cell.t = "s"; cell.v = String(cell.v); }
+      if (opts.link && opts.link.includes(C) && cell.v) { cell.l = { Target: urlOf(cell.v) }; }
+      if (opts.mail && opts.mail.includes(C) && cell.v) { cell.l = { Target: "mailto:" + cell.v }; }
+    }
+    ws["!cols"] = header.map((h, i) => ({ wch: clamp(Math.max(h.length, ...rows.slice(0, 200).map(r => String(r[i] instanceof Date ? "00/00/0000" : r[i] ?? "").length)) + 2, 10, 60) }));
+    ws["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: Math.max(rows.length, 1), c: header.length - 1 } }) };
+    return ws;
+  };
+  const wb = XLSX.utils.book_new(); const v = (c, k) => val(c, k) ?? "";
+  const num = (c, k) => val(c, k) === null ? "" : +val(c, k);
+  XLSX.utils.book_append_sheet(wb, sheet(
+    ["ID", "Empresa", "CIF/NIF", "Sector", "CNAE", "Provincia", "Municipio", "Dirección", "Fecha de constitución", "Antigüedad (años)", "Empleados", "Tamaño (estimado)", "Valoración Google", "Nº reseñas", "Teléfono", "Email", "Página web", "Redes sociales", "Reservas online", "Potencial comercial", "Estado comercial", "Etiquetas", "Datos de ejemplo", "Fuentes de los datos"],
+    list.map(c => [c.id, v(c, "name"), v(c, "cif"), v(c, "sector"), v(c, "cnae") === "" ? "" : String(v(c, "cnae")), v(c, "province"), v(c, "municipality"), v(c, "address"), D(val(c, "foundedAt")) ?? "", ageYears(c) === null ? "" : Math.round(ageYears(c) * 10) / 10, num(c, "employees"), sizeOf(c) || "", num(c, "rating"), num(c, "reviews"), v(c, "phone"), v(c, "email"), v(c, "web"), v(c, "social"), obTxt(val(c, "onlineBooking")), score(c).score ?? "", stl(c), (c.crm.tags || []).map(t => tagById(t)?.label).filter(Boolean).join(", "), c.demo ? "Sí" : "No", srcTxt(c)]),
+    { text: [4, 14], link: [16], mail: [15], decimal: [9, 12] }), "Empresas");
+  const contacts = []; list.forEach(c => { (c.contacts || []).forEach(k => contacts.push([c.id, v(c, "name"), k.name, k.role, k.phone, k.email])); if (c.crm.contactPerson && !(c.contacts || []).some(k => k.name === c.crm.contactPerson)) contacts.push([c.id, v(c, "name"), c.crm.contactPerson, "Persona de contacto (CRM)", "", ""]); });
+  XLSX.utils.book_append_sheet(wb, sheet(["ID empresa", "Empresa", "Nombre", "Cargo", "Teléfono", "Email"], contacts, { text: [4], mail: [5] }), "Contactos");
+  const inter = []; list.forEach(c => (c.interactions || []).slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach(i => inter.push([c.id, v(c, "name"), D(i.date), i.type, i.text])));
+  XLSX.utils.book_append_sheet(wb, sheet(["ID empresa", "Empresa", "Fecha", "Tipo", "Descripción"], inter), "Interacciones");
+  const segs = list.filter(isProspect).map(c => { const nd = c.crm.nextActionDate; return [c.id, v(c, "name"), stl(c), D(c.crm.lastContact) ?? "", c.crm.nextAction || "", D(nd) ?? "", D(c.crm.nextFollowUp) ?? "", !nd ? "Sin fecha" : nd < T ? "Atrasado" : nd === T ? "Hoy" : "Próximo"]; });
+  XLSX.utils.book_append_sheet(wb, sheet(["ID empresa", "Empresa", "Estado", "Último contacto", "Próxima acción", "Fecha próxima acción", "Próximo seguimiento", "Situación"], segs), "Seguimientos");
+  const opps = list.filter(isProspect).map(c => [c.id, v(c, "name"), stl(c), score(c).score ?? "", c.crm.amount === "" || c.crm.amount === undefined ? "" : +c.crm.amount, c.crm.product || "", c.crm.channel || "", c.crm.contactPerson || "", D(c.crm.firstContact) ?? "", D(c.crm.contractDate) ?? "", D(c.crm.trialStart) ?? "", D(c.crm.trialEnd) ?? "", c.crm.lossReason || "", c.crm.result || "", c.crm.notes || ""]);
+  XLSX.utils.book_append_sheet(wb, sheet(["ID empresa", "Empresa", "Estado", "Potencial comercial", "Importe potencial", "Producto/servicio ofrecido", "Medio de contacto", "Persona de contacto", "Primer contacto", "Fecha de contratación", "Inicio de prueba", "Fin de prueba", "Motivo de pérdida", "Resultado del contacto", "Notas"], opps, { money: [4] }), "Oportunidades");
+  const st = stats(list);
+  const statRows = [["Empresas exportadas", list.length], ["Prospectos", st.prospects], ["Por contactar", st.toContact], ["Contactados", st.contacted], ["Interesados", st.interested], ["Demos pendientes", st.demoPending], ["En pruebas", st.trial], ["Contratos cerrados", st.won], ["Perdidos", st.lost], ["Valor potencial del pipeline (€)", st.pipeline], ["Potencial medio", st.avgScore ?? ""]];
+  S.settings.statuses.forEach(s => statRows.push(["Estado: " + s.label, list.filter(c => c.crm.status === s.id).length]));
+  STAGES.forEach(g => statRows.push(["Embudo: " + g.label, st.funnel[g.n]]));
+  const wsS = sheet(["Métrica", "Valor"], statRows); wsS["!cols"] = [{ wch: 36 }, { wch: 16 }];
+  XLSX.utils.book_append_sheet(wb, wsS, "Estadísticas");
+  const buf = XLSX.write(wb, { bookType: "xlsx", type: "array", cellDates: true });
+  saveFile(`prospeccion-${stamp()}.xlsx`, new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+}
+
+/* ============ Importación ============ */
+const HEADER_MAP = { "empresa": "name", "nombre": "name", "cif nif": "cif", "cif": "cif", "nif": "cif", "sector": "sector", "cnae": "cnae", "provincia": "province", "municipio": "municipality", "direccion": "address", "fecha de constitucion": "foundedAt", "empleados": "employees", "valoracion google": "rating", "valoracion": "rating", "n resenas": "reviews", "no resenas": "reviews", "resenas": "reviews", "telefono": "phone", "email": "email", "pagina web": "web", "web": "web", "redes sociales": "social", "reservas online": "onlineBooking" };
+function importFile(file) {
+  const r = new FileReader();
+  if (/\.json$/i.test(file.name)) {
+    r.onload = () => {
+      try {
+        const j = JSON.parse(r.result); const list = Array.isArray(j) ? j : j.companies;
+        if (!Array.isArray(list)) throw new Error();
+        if (!Array.isArray(j) && Array.isArray(j.tags)) j.tags.forEach(t => { if (t && t.id && t.label && !tagById(t.id)) S.settings.tags.push({ id: t.id, label: String(t.label), color: t.color || "#64748B" }); });
+        if (!Array.isArray(j) && Array.isArray(j.statuses)) j.statuses.forEach(s => { if (s && s.id && s.label && !statusById(s.id)) S.settings.statuses.push({ id: s.id, label: String(s.label), color: s.color || "#64748B", stage: +s.stage || 0 }); });
+        Store.saveSettings(); importCompanies(list, "Importación JSON");
+      } catch (e) { toast("El JSON no tiene el formato esperado (una lista de empresas o una exportación de esta app)"); }
+    };
+    r.readAsText(file);
+  } else if (/\.(xlsx|xls|csv)$/i.test(file.name)) {
+    if (!window.XLSX) { toast("La librería de Excel no se ha cargado. Recarga la página."); return; }
+    r.onload = () => {
+      try {
+        const wb = XLSX.read(r.result, { type: "array", cellDates: true });
+        const ws = wb.Sheets["Empresas"] || wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: true });
+        const byId = new Map(); const list = [];
+        rows.forEach(row => {
+          const raw = { f: {}, crm: { tags: [] }, interactions: [], contacts: [] };
+          for (const [h, v0] of Object.entries(row)) {
+            const hk = norm(h).replace(/\bnº\b/, "n"); const k = HEADER_MAP[hk];
+            let v = v0; if (v === "" || v === null || v === undefined) continue;
+            if (hk === "id") { raw.id = String(v); continue; }
+            if (hk === "estado comercial") { const s = S.settings.statuses.find(s => norm(s.label) === norm(v)); if (s) raw.crm.status = s.id; continue; }
+            if (hk === "etiquetas") { raw.crm.tags = String(v).split(",").map(x => S.settings.tags.find(t => norm(t.label) === norm(x))?.id).filter(Boolean); continue; }
+            if (hk === "datos de ejemplo") { if (norm(v) === "si") raw.demo = true; continue; }
+            if (!k) continue;
+            if (k === "foundedAt") v = v instanceof Date ? isoOf(v) : /^\d{2}\/\d{2}\/\d{4}$/.test(v) ? String(v).split("/").reverse().join("-") : String(v).slice(0, 10);
+            else if (["employees", "reviews"].includes(k)) { v = parseInt(String(v).replace(/\D/g, ""), 10); if (isNaN(v)) continue; }
+            else if (k === "rating") { v = parseFloat(String(v).replace(",", ".")); if (isNaN(v)) continue; }
+            else if (k === "onlineBooking") { const n = norm(v); if (n === "si" || n === "true") v = true; else if (n === "no" || n === "false") v = false; else continue; }
+            else v = String(v).trim();
+            raw.f[k] = { v, src: "manual", origin: "Importación Excel" };
+          }
+          if (raw.crm.status) raw.crm.maxStage = Math.max(0, statusById(raw.crm.status)?.stage ?? 0);
+          list.push(raw); if (raw.id) byId.set(raw.id, raw);
+        });
+        const wi = wb.Sheets["Interacciones"];
+        if (wi) XLSX.utils.sheet_to_json(wi, { defval: "", raw: true }).forEach(row => {
+          const t = byId.get(String(row["ID empresa"] || "")); if (!t) return;
+          const d = row["Fecha"] instanceof Date ? isoOf(row["Fecha"]) : String(row["Fecha"] || "").slice(0, 10);
+          t.interactions.push({ id: "x" + norm(t.id + d + row["Tipo"] + row["Descripción"]).replace(/ /g, "").slice(0, 60), date: d || todayISO(), type: row["Tipo"] || "Nota", text: String(row["Descripción"] || "") });
+        });
+        const wc = wb.Sheets["Contactos"];
+        if (wc) XLSX.utils.sheet_to_json(wc, { defval: "", raw: true }).forEach(row => {
+          const t = byId.get(String(row["ID empresa"] || "")); if (!t || !row["Nombre"] || /CRM\)$/.test(row["Cargo"])) return;
+          t.contacts.push({ id: "x" + norm(t.id + row["Nombre"] + row["Email"]).replace(/ /g, "").slice(0, 60), name: String(row["Nombre"]), role: String(row["Cargo"] || ""), phone: String(row["Teléfono"] || ""), email: String(row["Email"] || "") });
+        });
+        importCompanies(list, "Importación Excel");
+      } catch (e) { toast("No se pudo leer el archivo. Comprueba que tenga una hoja con encabezados en la primera fila."); }
+    };
+    r.readAsArrayBuffer(file);
+  } else toast("Formato no admitido. Usa .json o .xlsx");
+}
+function pickImport() {
+  const i = document.createElement("input"); i.type = "file"; i.accept = ".json,.xlsx,.xls,.csv";
+  i.onchange = () => { if (i.files[0]) importFile(i.files[0]); }; i.click();
+}
+
+/* ============ Estadísticas ============ */
+function stats(list = [...S.companies.values()]) {
+  const T = todayISO(); const P = list.filter(isProspect);
+  const byStage = n => P.filter(c => stageOf(c) === n).length;
+  const funnel = {}; STAGES.forEach(g => funnel[g.n] = g.n === 0 ? P.length : P.filter(c => Math.max(c.crm.maxStage ?? 0, stageOf(c) ?? 0) >= g.n).length);
+  const scores = list.map(c => score(c).score).filter(x => x !== null);
+  return {
+    total: list.length, prospects: P.length,
+    newP: P.filter(c => c.crm.status === "nuevo").length,
+    toContact: P.filter(c => stageOf(c) === 0).length,
+    contacted: byStage(1), interested: byStage(2) + byStage(3),
+    demoPending: P.filter(c => statusById(c.crm.status)?.demoPending).length,
+    trial: P.filter(c => statusById(c.crm.status)?.trial).length,
+    won: byStage(5), lost: byStage(-1),
+    pipeline: P.filter(c => { const s = stageOf(c); return s !== null && s >= 0 && s < 5; }).reduce((a, c) => a + (+c.crm.amount || 0), 0),
+    wonValue: P.filter(c => stageOf(c) === 5).reduce((a, c) => a + (+c.crm.amount || 0), 0),
+    upcoming: P.filter(c => c.crm.nextActionDate && c.crm.nextActionDate >= T && c.crm.nextActionDate <= addDays(T, 7)).sort((a, b) => a.crm.nextActionDate < b.crm.nextActionDate ? -1 : 1),
+    overdue: P.filter(c => c.crm.nextActionDate && c.crm.nextActionDate < T && (stageOf(c) ?? 0) >= 0).length,
+    avgScore: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null,
+    funnel
+  };
+}
+</script>
+<script>
+/* ============ Render principal ============ */
+const NAV = [
+  { id: "hoy", label: "Hoy", icon: "today" }, { id: "buscar", label: "Buscar", icon: "radar" }, { id: "panel", label: "Panel", icon: "dash" },
+  { id: "empresas", label: "Empresas", icon: "search" }, { id: "pipeline", label: "Pipeline", icon: "pipe" },
+  { id: "ajustes", label: "Ajustes", icon: "settings" }
+];
+function statusPill(c) {
+  const s = statusById(c.crm?.status);
+  if (!s) return `<span class="pill">Sin prospectar</span>`;
+  return `<span class="pill" style="background:${s.color}1f;color:${s.color}"><span class="dot"></span>${esc(s.label)}</span>`;
+}
+function statusSelect(c, extra = "") {
+  return `<select class="select" data-act="status" data-id="${c.id}" aria-label="Estado comercial" ${extra}>
+    <option value="">Sin prospectar</option>
+    ${S.settings.statuses.map(s => `<option value="${s.id}" ${c.crm?.status === s.id ? "selected" : ""}>${esc(s.label)}</option>`).join("")}
+  </select>`;
+}
+const tagsHTML = c => (c.crm?.tags || []).map(tagById).filter(Boolean).map(t => `<span class="tag" style="background:${t.color}1c;color:${t.color}">${esc(t.label)}</span>`).join(" ");
+const NA = `<span class="na">No disponible</span>`;
+function srcBadge(c, k) {
+  const x = c.f?.[k]; if (!x) return "";
+  const s = SRC[x.src] || SRC.manual;
+  return `<span class="src ${x.src}" title="${esc(s.label + (x.origin ? " · " + x.origin : "") + (x.at ? " · " + fmtDate(x.at) : ""))}">${s.short}</span>`;
+}
+function dateCell(iso) {
+  if (!iso) return `<span class="muted">—</span>`;
+  const T = todayISO(); const cls = iso < T ? "overdue" : iso === T ? "today-c" : "";
+  return `<span class="${cls}">${iso === T ? "Hoy" : fmtDate(iso)}</span>`;
+}
+function todayBuckets() {
+  const T = todayISO(), P = [...S.companies.values()].filter(isProspect);
+  const open = c => (stageOf(c) ?? 0) >= 0;
+  const by = fn => P.filter(fn).sort((a, b) => (a.crm.nextActionDate || "9") < (b.crm.nextActionDate || "9") ? -1 : 1);
+  return {
+    overdue: by(c => open(c) && c.crm.nextActionDate && c.crm.nextActionDate < T),
+    today: by(c => open(c) && c.crm.nextActionDate === T),
+    pending: by(c => stageOf(c) === 0 && !c.crm.nextActionDate).sort((a, b) => (score(b).score ?? -1) - (score(a).score ?? -1)),
+    demos: by(c => statusById(c.crm.status)?.demoPending),
+    trials: by(c => c.crm.trialEnd && statusById(c.crm.status)?.trial && c.crm.trialEnd <= addDays(T, 7)).sort((a, b) => a.crm.trialEnd < b.crm.trialEnd ? -1 : 1),
+    clients: by(c => stageOf(c) === 5 && (!c.crm.lastContact || daysBetween(c.crm.lastContact, T) > 30) && !(c.crm.nextActionDate && c.crm.nextActionDate >= T))
+  };
+}
+function render() {
+  const root = $("#root"); const tb = todayBuckets(); const alerts = tb.overdue.length + tb.today.length;
+  const navBtn = (n, cls) => `<button class="${cls}" data-nav="${n.id}" ${S.view === n.id ? 'aria-current="page"' : ""}>${ico(n.icon)}<span>${n.label}</span>${n.id === "hoy" && alerts ? `<span class="nav-count">${alerts}</span>` : ""}</button>`;
+  const scroll = { x: window.scrollX, y: window.scrollY };
+  root.innerHTML = `<div class="app">
+    <aside class="side" aria-label="Navegación">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Radar Comercial</div>
+      ${NAV.map(n => navBtn(n, "nav-btn")).join("")}
+      ${S.settings.savedSearches.length ? `<div class="side-sub">Búsquedas guardadas</div><div class="side-list">${S.settings.savedSearches.map(s => `<button class="side-link" data-act="load-search" data-id="${s.id}" title="${esc(s.name)}">${esc(s.name)}</button>`).join("")}</div>` : ""}
+      <div class="side-foot">${"Datos guardados en este navegador"}<br>${nf.format(S.companies.size)} empresas</div>
+    </aside>
+    <main class="main" id="main">${VIEWS[S.view]()}</main>
+    <nav class="bottom-nav" aria-label="Navegación">${NAV.map(n => navBtn(n, "")).join("")}</nav>
+  </div>`;
+  window.scrollTo(scroll.x, scroll.y);
+  if (S.openId) renderDrawer();
+}
+const VIEWS = {};
+
+/* ---------- HOY ---------- */
+VIEWS.hoy = () => {
+  const b = todayBuckets(), T = todayISO();
+  const d = new Date(); const dayName = d.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+  const item = (c, sub, done = true) => `<div class="t-item">
+      <div style="min-width:0"><div class="t-name" data-open="${c.id}">${esc(val(c, "name"))}</div><div class="t-sub">${sub}</div></div>
+      <div class="t-btns">${val(c, "phone") ? `<a class="btn sm icon" href="tel:${esc(val(c, "phone"))}" aria-label="Llamar">${ico("phone")}</a>` : ""}${done ? `<button class="btn sm" data-act="done" data-id="${c.id}">${ico("check")}<span>Hecho</span></button>` : `<button class="btn sm" data-open="${c.id}">Abrir</button>`}</div>
+    </div>`;
+  const act = c => `${esc(c.crm.nextAction || "Seguimiento")} ${statusPill(c)}`;
+  const sec = (title, list, fn, alert, emptyTxt) => `<section class="card"><div class="card-head"><h2>${title}</h2><span class="sec-count ${alert && list.length ? "alert" : ""}">${list.length}</span></div>
+      ${list.length ? list.slice(0, 12).map(fn).join("") + (list.length > 12 ? `<p class="muted small">Y ${list.length - 12} más.</p>` : "") : `<p class="muted small" style="margin:0">${emptyTxt}</p>`}</section>`;
+  const none = !S.companies.size;
+  return `<div class="page-head"><div><h1>Hoy</h1><p>${dayName.charAt(0).toUpperCase() + dayName.slice(1)}. ${b.overdue.length + b.today.length ? `Tienes ${b.overdue.length + b.today.length} seguimientos para hoy o atrasados.` : "Sin seguimientos urgentes."}</p></div>
+    <div class="head-actions"><button class="btn primary" data-act="new-company">${ico("plus")}<span>Añadir empresa</span></button></div></div>
+    ${none ? emptyStart() : `<div class="today-grid">
+      ${sec("Seguimientos atrasados", b.overdue, c => item(c, `<span class="overdue">${fmtDate(c.crm.nextActionDate)} · hace ${daysBetween(c.crm.nextActionDate, T)} d</span> · ${act(c)}`), true, "Nada atrasado.")}
+      ${sec("Seguimientos de hoy", b.today, c => item(c, act(c)), false, "Nada programado para hoy.")}
+      ${sec("Contactos pendientes", b.pending, c => item(c, `Potencial ${score(c).score ?? "—"} · ${esc(val(c, "municipality") || "")} · sin fecha de contacto`), false, "No hay prospectos nuevos sin programar.")}
+      ${sec("Demos pendientes", b.demos, c => item(c, `${c.crm.nextActionDate ? dateCell(c.crm.nextActionDate) + " · " : ""}${esc(c.crm.nextAction || "Programar demo")}`), false, "Sin demos pendientes.")}
+      ${sec("Pruebas a punto de terminar", b.trials, c => item(c, `Termina ${dateCell(c.crm.trialEnd)} · ${esc(c.crm.nextAction || "Preparar cierre")}`), false, "Ninguna prueba termina esta semana.")}
+      ${sec("Clientes a los que hacer seguimiento", b.clients, c => item(c, `Último contacto: ${c.crm.lastContact ? fmtDate(c.crm.lastContact) : "nunca"}`), false, "Todos tus clientes están al día.")}
+    </div>`}`;
+};
+function emptyStart() {
+  return `<section class="card empty"><strong>Empieza a construir tu base de prospectos</strong>
+    Busca bares, restaurantes y otros locales reales por provincia y municipio, o importa tu propio Excel/JSON.
+    <div class="row"><button class="btn primary" data-nav="buscar">${ico("radar")}<span>Buscar empresas</span></button><button class="btn" data-act="import">${ico("upload")}<span>Importar</span></button><button class="btn" data-act="new-company">${ico("plus")}<span>Añadir a mano</span></button></div></section>`;
+}
+
+/* ---------- PANEL ---------- */
+VIEWS.panel = () => {
+  const st = stats(), P = [...S.companies.values()].filter(isProspect);
+  const kpi = (label, v, go, feature) => `<button class="kpi ${feature ? "feature" : ""}" ${go ? `data-kpi='${esc(JSON.stringify(go))}'` : ""}><div class="k-label">${label}</div><div class="k-val">${v}</div></button>`;
+  const max = Math.max(1, st.funnel[0]);
+  const colors = ["#64748B", "#2350F5", "#7657F2", "#F97316", "#14B8A6", "#0F9D63"];
+  const funnel = STAGES.map((g, i) => { const n = st.funnel[g.n], prev = i ? st.funnel[STAGES[i - 1].n] : null;
+    return `<div class="f-row"><div class="f-lab">${g.label}</div><div class="f-track"><div class="f-fill" style="width:${n / max * 100}%;background:${colors[i]}"></div></div><div class="f-num">${n}${prev ? `<small title="Conversión desde el paso anterior">${Math.round(n / prev * 100)} % conv.</small>` : ""}</div></div>`; }).join("");
+  const weeks = []; const T = todayISO();
+  for (let w = 7; w >= 0; w--) { const end = addDays(T, -w * 7), start = addDays(end, -6); let n = 0; P.forEach(c => c.interactions.forEach(i => { if (i.type !== "Estado" && i.date >= start && i.date <= end) n++; })); weeks.push({ n, label: fmtDate(start).slice(0, 5) }); }
+  const wmax = Math.max(1, ...weeks.map(w => w.n));
+  const dist = S.settings.statuses.map(s => ({ s, n: P.filter(c => c.crm.status === s.id).length })).filter(x => x.n);
+  return `<div class="page-head"><div><h1>Panel</h1><p>Visión general de tu prospección y del pipeline comercial.</p></div>
+    <div class="head-actions"><button class="btn" data-act="export-all-xlsx">${ico("download")}<span>Exportar Excel</span></button></div></div>
+    ${!S.companies.size ? emptyStart() : `
+    <div class="kpis">
+      ${kpi("Valor potencial del pipeline", eur.format(st.pipeline), { prospect: "yes" }, true)}
+      ${kpi("Empresas en tu base", nf.format(st.total), {})}
+      ${kpi("Nuevos prospectos", st.newP, { statuses: ["nuevo"] })}
+      ${kpi("Por contactar", st.toContact, { statuses: S.settings.statuses.filter(s => s.stage === 0).map(s => s.id) })}
+      ${kpi("Contactados", st.contacted, { statuses: S.settings.statuses.filter(s => s.stage === 1).map(s => s.id) })}
+      ${kpi("Interesados", st.interested, { statuses: S.settings.statuses.filter(s => s.stage === 2 || s.stage === 3).map(s => s.id) })}
+      ${kpi("Demos pendientes", st.demoPending, { statuses: S.settings.statuses.filter(s => s.demoPending).map(s => s.id) })}
+      ${kpi("En pruebas", st.trial, { statuses: S.settings.statuses.filter(s => s.trial).map(s => s.id) })}
+      ${kpi("Contratos cerrados", st.won, { statuses: S.settings.statuses.filter(s => s.stage === 5).map(s => s.id) })}
+      ${kpi("Prospectos perdidos", st.lost, { statuses: S.settings.statuses.filter(s => s.stage === -1).map(s => s.id) })}
+    </div>
+    <div class="dash-grid">
+      <section class="card span-7"><div class="card-head"><h2>Embudo comercial</h2><span class="muted small">Prospectos que han alcanzado cada fase</span></div><div class="funnel">${funnel}</div></section>
+      <section class="card span-5"><div class="card-head"><h2>Próximos seguimientos</h2><span class="muted small">7 días</span></div>
+        ${st.upcoming.length ? st.upcoming.slice(0, 8).map(c => `<div class="t-item"><div style="min-width:0"><div class="t-name" data-open="${c.id}">${esc(val(c, "name"))}</div><div class="t-sub">${esc(c.crm.nextAction || "Seguimiento")}</div></div><div>${dateCell(c.crm.nextActionDate)}</div></div>`).join("") : `<p class="muted small">No hay seguimientos programados esta semana.</p>`}
+        ${st.overdue ? `<p class="small overdue" style="margin:10px 0 0">${st.overdue} ${st.overdue === 1 ? "seguimiento atrasado" : "seguimientos atrasados"}</p>` : ""}</section>
+      <section class="card span-6"><div class="card-head"><h2>Actividad comercial</h2><span class="muted small">Interacciones por semana</span></div>
+        <div class="bars">${weeks.map(w => `<div class="bar-col"><b>${w.n || ""}</b><i style="height:${w.n / wmax * 100}%"></i><span>${w.label}</span></div>`).join("")}</div></section>
+      <section class="card span-6"><div class="card-head"><h2>Prospectos por estado</h2><span class="muted small">${P.length} en total · potencial medio ${st.avgScore ?? "—"}</span></div>
+        ${dist.length ? `<div class="stack">${dist.map(x => `<i style="width:${x.n / P.length * 100}%;background:${x.s.color}" title="${esc(x.s.label)}: ${x.n}"></i>`).join("")}</div>
+        <div class="legend">${dist.map(x => `<span><i style="background:${x.s.color}"></i>${esc(x.s.label)} <b>${x.n}</b></span>`).join("")}</div>` : `<p class="muted small">Aún no hay prospectos.</p>`}
+        <p class="small muted" style="margin:14px 0 0">Valor contratado: <b style="color:var(--ink)">${eur.format(st.wonValue)}</b></p></section>
+    </div>`}`;
+};
+
+/* ---------- EMPRESAS ---------- */
+const COLS = [
+  ["name", "Empresa"], ["score", "Potencial"], ["status", "Estado comercial"], ["sector", "Sector/CNAE"], ["province", "Provincia"], ["municipality", "Municipio"], ["foundedAt", "F. constitución"], ["age", "Antigüedad"],
+  ["employees", "Empleados"], ["rating", "Valoración"], ["reviews", "Reseñas"], ["phone", "Teléfono"], ["email", "Email"], ["web", "Web"],
+  ["lastContact", "Último contacto"], ["nextAction", "Próxima acción"], ["nextActionDate", "Seguimiento"]
+];
+function cellVal(c, k) {
+  const v = val(c, k);
+  if (k === "phone") return v ? `<a href="tel:${esc(v)}" data-stop>${esc(v)}</a>` : NA;
+  if (k === "email") return v ? `<a href="mailto:${esc(v)}" data-stop class="trunc">${esc(v)}</a>` : NA;
+  if (k === "web") return v ? `<a href="${esc(urlOf(v))}" target="_blank" rel="noopener" data-stop class="trunc">${esc(domainOf(v))}</a>` : NA;
+  if (k === "rating") return v !== null ? `${nf1.format(v)}★` : NA;
+  if (k === "reviews" || k === "employees") return v !== null ? nf.format(v) + (srcOf(c, k) === "estimated" ? " <span class='src estimated' title='Estimado'>Est.</span>" : "") : NA;
+  if (k === "foundedAt") return v ? fmtDate(v) : NA;
+  return v !== null ? esc(v) : NA;
+}
+VIEWS.empresas = () => {
+  const list = filtered(), n = list.length, pages = Math.max(1, Math.ceil(n / PER_PAGE)); S.page = Math.min(S.page, pages);
+  const rows = list.slice(0, S.page * PER_PAGE), F = S.filters;
+  const provinces = [...new Set([...S.companies.values()].map(c => val(c, "province")).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  const sectors = [...new Set([...S.companies.values()].map(c => val(c, "sector")).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  const allSel = rows.length && rows.every(c => S.selected.has(c.id));
+  const th = ([k, l]) => `<th class="${k === "name" ? "c-name " : ""}${S.sort.key === k ? "sorted" : ""}"><button data-sort="${k}">${l}<span class="arr">${S.sort.key === k ? (S.sort.dir === "asc" ? "▲" : "▼") : "↕"}</span></button></th>`;
+  const fc = activeFilterCount();
+  const inp = (k, ph, type = "text", extra = "") => `<input class="input" data-filter="${k}" type="${type}" placeholder="${ph}" value="${esc(F[k] ?? "")}" ${extra}>`;
+  const sel = (k, opts) => `<select class="select" data-filter="${k}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${String(F[k] ?? "") === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+  return `<div class="page-head"><div><h1>Empresas</h1><p>Busca, filtra y prioriza negocios. ${n === S.companies.size ? `${nf.format(n)} empresas` : `${nf.format(n)} de ${nf.format(S.companies.size)} empresas`}.</p></div>
+    <div class="head-actions"><button class="btn" data-act="import">${ico("upload")}<span>Importar</span></button><button class="btn" data-act="new-company">${ico("plus")}<span>Añadir a mano</span></button><button class="btn primary" data-nav="buscar">${ico("radar")}<span>Buscar locales</span></button></div></div>
+    ${S.settings.savedSearches.length ? `<div class="chips">${S.settings.savedSearches.map(s => `<button class="chip ${S.activeSearch === s.id ? "on" : ""}" data-act="load-search" data-id="${s.id}">${esc(s.name)}</button>`).join("")}</div>` : ""}
+    <div class="toolbar">
+      <label class="search-box">${ico("search")}<span class="sr">Buscar</span><input class="input" id="q" data-filter="q" type="search" placeholder="Nombre, CIF, municipio, dirección…" value="${esc(F.q || "")}"></label>
+      <button class="btn" data-act="toggle-filters" aria-expanded="${S.showFilters}">${ico("filter")}<span>Filtros${fc ? ` (${fc})` : ""}</span></button>
+      ${fc || F.q ? `<button class="btn ghost" data-act="clear-filters">Limpiar</button><button class="btn ghost" data-act="save-search">${ico("save")}<span>Guardar búsqueda</span></button>` : ""}
+    </div>
+    ${S.showFilters ? `<div class="card" style="margin-bottom:14px"><div class="filters">
+      <div class="field"><label>Provincia</label>${sel("province", [["", "Todas"], ...provinces.map(p => [p, p])])}</div>
+      <div class="field"><label>Municipio</label>${inp("municipality", "Cualquiera")}</div>
+      <div class="field"><label>Sector</label><input class="input" data-filter="sector" list="dl-sectors" placeholder="Cualquiera" value="${esc(F.sector || "")}"><datalist id="dl-sectors">${sectors.map(s => `<option value="${esc(s)}">`).join("")}</datalist></div>
+      <div class="field"><label>CNAE (empieza por)</label>${inp("cnae", "p. ej. 56", "text", 'inputmode="numeric"')}</div>
+      <div class="field"><label>Constituida entre</label><div class="range">${inp("foundedFrom", "", "date", 'aria-label="Desde"')}${inp("foundedTo", "", "date", 'aria-label="Hasta"')}</div></div>
+      <div class="field"><label>Antigüedad (años)</label><div class="range">${inp("ageMin", "Mín.", "number", 'min="0" step="0.5"')}${inp("ageMax", "Máx.", "number", 'min="0" step="0.5"')}</div></div>
+      <div class="field"><label>Empleados</label><div class="range">${inp("empMin", "Mín.", "number", 'min="0"')}${inp("empMax", "Máx.", "number", 'min="0"')}</div></div>
+      <div class="field"><label>Tamaño aproximado</label>${sel("size", [["", "Cualquiera"], ["Microempresa", "Microempresa (<10)"], ["Pequeña", "Pequeña (10-49)"], ["Mediana", "Mediana (50-249)"], ["Grande", "Grande (250+)"]])}</div>
+      <div class="field"><label>Valoración Google mínima</label>${inp("ratingMin", "p. ej. 4,2", "number", 'min="0" max="5" step="0.1"')}</div>
+      <div class="field"><label>Reseñas mínimas</label>${inp("reviewsMin", "p. ej. 100", "number", 'min="0"')}</div>
+      <div class="field"><label>Presencia web</label>${sel("web", [["", "Indiferente"], ["yes", "Con web"], ["no", "Sin web registrada"]])}</div>
+      <div class="field"><label>Reservas online</label>${sel("booking", [["", "Indiferente"], ["yes", "Sí"], ["no", "No"]])}</div>
+      <div class="field"><label>Potencial mínimo</label>${inp("scoreMin", "0-100", "number", 'min="0" max="100"')}</div>
+      <div class="field"><label>En el CRM</label>${sel("prospect", [["", "Todas"], ["yes", "Solo prospectos"], ["no", "Sin prospectar"]])}</div>
+      <div class="field"><label>Estado comercial</label>${sel("status1", [["", "Cualquiera"], ...S.settings.statuses.map(s => [s.id, s.label])])}</div>
+      <div class="field"><label>Etiqueta</label>${sel("tag", [["", "Cualquiera"], ...S.settings.tags.map(t => [t.id, t.label])])}</div>
+      <div class="field"><label>Seguimiento</label>${sel("follow", [["", "Indiferente"], ["overdue", "Atrasado"], ["today", "Hoy"], ["week", "Próximos 7 días"]])}</div>
+    </div></div>` : ""}
+    ${S.selected.size ? `<div class="bulk"><b>${S.selected.size} seleccionadas</b>
+      <select class="select" data-act="bulk-status" aria-label="Cambiar estado"><option value="">Cambiar estado…</option>${S.settings.statuses.map(s => `<option value="${s.id}">${esc(s.label)}</option>`).join("")}</select>
+      <select class="select" data-act="bulk-tag" aria-label="Añadir etiqueta"><option value="">Añadir etiqueta…</option>${S.settings.tags.map(t => `<option value="${t.id}">${esc(t.label)}</option>`).join("")}</select>
+      <button class="btn sm" data-act="export-sel-xlsx">${ico("download")}<span>Excel</span></button><button class="btn sm" data-act="export-sel-json">${ico("download")}<span>JSON</span></button>
+      <button class="btn sm" data-act="clear-sel">Quitar selección</button></div>` : ""}
+    ${!S.companies.size ? emptyStart() : !n ? `<div class="card empty"><strong>Ninguna empresa cumple estos filtros</strong>Prueba a quitar algún filtro o amplía los rangos.<div class="row"><button class="btn" data-act="clear-filters">Limpiar filtros</button></div></div>` : `
+    <div class="tablewrap"><table class="data"><thead><tr><th class="c-chk"><input type="checkbox" class="chk" data-act="sel-all" ${allSel ? "checked" : ""} aria-label="Seleccionar todas"></th>${COLS.map(th).join("")}</tr></thead><tbody>
+      ${rows.map(c => `<tr data-open="${c.id}" class="${S.selected.has(c.id) ? "sel" : ""}">
+        <td class="c-chk" data-stop><input type="checkbox" class="chk" data-act="sel" data-id="${c.id}" ${S.selected.has(c.id) ? "checked" : ""} aria-label="Seleccionar"></td>
+        <td class="c-name"><strong>${esc(val(c, "name"))}</strong>${c.demo ? `<span class="small" style="color:var(--warm)">Ejemplo ficticio</span> ` : ""}${tagsHTML(c)}</td>
+        <td>${scoreHTML(c)}</td><td data-stop>${statusSelect(c)}</td>
+        <td>${val(c, "sector") ? esc(val(c, "sector")) : NA}${val(c, "cnae") ? `<div class="small muted">CNAE ${esc(val(c, "cnae"))}</div>` : ""}</td>
+        <td>${cellVal(c, "province")}</td><td>${cellVal(c, "municipality")}</td><td>${cellVal(c, "foundedAt")}</td>
+        <td>${ageYears(c) !== null ? fmtAge(ageYears(c)) : NA}</td><td>${cellVal(c, "employees")}</td><td>${cellVal(c, "rating")}</td><td>${cellVal(c, "reviews")}</td>
+        <td>${cellVal(c, "phone")}</td><td>${cellVal(c, "email")}</td><td>${cellVal(c, "web")}</td>
+        <td>${dateCell(c.crm.lastContact)}</td><td><span class="trunc">${esc(c.crm.nextAction || "—")}</span></td><td>${dateCell(c.crm.nextActionDate)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="list-cards">
+      <div class="row" style="justify-content:space-between"><label class="row small"><input type="checkbox" class="chk" data-act="sel-all" ${allSel ? "checked" : ""}> Seleccionar todas</label>
+        <select class="select" data-act="sort-mobile" style="width:auto;flex:0 1 220px" aria-label="Ordenar">${COLS.map(([k, l]) => `<option value="${k}" ${S.sort.key === k ? "selected" : ""}>Ordenar: ${l}</option>`).join("")}</select>
+        <button class="btn sm icon" data-act="sort-dir" aria-label="Invertir orden">${S.sort.dir === "asc" ? "▲" : "▼"}</button></div>
+      ${rows.map(c => `<article class="m-card ${S.selected.has(c.id) ? "sel" : ""}">
+        <div class="m-top"><input type="checkbox" class="chk" data-act="sel" data-id="${c.id}" ${S.selected.has(c.id) ? "checked" : ""} aria-label="Seleccionar" style="margin-top:3px">
+          <div class="m-title" data-open="${c.id}"><strong>${esc(val(c, "name"))}</strong><span class="small muted">${esc([val(c, "sector"), val(c, "municipality"), val(c, "province")].filter(Boolean).join(" · ")) || "Sin ubicación"}</span>${c.demo ? `<div class="small" style="color:var(--warm)">Ejemplo ficticio</div>` : ""}</div>
+          ${scoreHTML(c)}</div>
+        <div class="m-kv">
+          <div><span>Valoración</span>${cellVal(c, "rating")} ${val(c, "reviews") !== null ? `<span class="muted small">(${nf.format(val(c, "reviews"))})</span>` : ""}</div>
+          <div><span>Empleados</span>${cellVal(c, "employees")}</div>
+          <div><span>Antigüedad</span>${ageYears(c) !== null ? fmtAge(ageYears(c)) : NA}</div>
+          <div><span>Seguimiento</span>${dateCell(c.crm.nextActionDate)}</div>
+          <div><span>Teléfono</span>${cellVal(c, "phone")}</div><div><span>Web</span>${cellVal(c, "web")}</div>
+          ${c.crm.nextAction ? `<div style="grid-column:1/-1"><span>Próxima acción</span>${esc(c.crm.nextAction)}</div>` : ""}
+        </div>
+        ${tagsHTML(c) ? `<div>${tagsHTML(c)}</div>` : ""}
+        <div class="m-actions">${statusSelect(c)}<button class="btn" data-open="${c.id}">Ver ficha</button></div>
+      </article>`).join("")}
+    </div>
+    ${n > rows.length ? `<div class="pager"><span class="muted small">Mostrando ${rows.length} de ${n}</span><button class="btn" data-act="more">Mostrar ${Math.min(PER_PAGE, n - rows.length)} más</button></div>` : ""}`}`;
+};
+
+/* ---------- PIPELINE ---------- */
+VIEWS.pipeline = () => {
+  const P = [...S.companies.values()].filter(isProspect);
+  const card = c => `<div class="k-card" data-open="${c.id}"><strong>${esc(val(c, "name"))}</strong>
+    <div class="k-meta">${scoreHTML(c)}${c.crm.amount ? `<b>${eur.format(+c.crm.amount)}</b>` : ""}${val(c, "municipality") ? `<span>${esc(val(c, "municipality"))}</span>` : ""}</div>
+    ${c.crm.nextActionDate || c.crm.nextAction ? `<div class="k-meta">${ico("clock")}${dateCell(c.crm.nextActionDate)} ${esc(c.crm.nextAction || "")}</div>` : ""}
+    <div data-stop>${statusSelect(c)}</div></div>`;
+  const cols = S.settings.statuses.map(s => ({ s, items: P.filter(c => c.crm.status === s.id).sort((a, b) => (score(b).score ?? -1) - (score(a).score ?? -1)) }));
+  const ms = S.mobileStage && statusById(S.mobileStage) ? S.mobileStage : (cols.find(x => x.items.length)?.s.id || S.settings.statuses[0].id);
+  return `<div class="page-head"><div><h1>Pipeline</h1><p>${P.length} prospectos · ${eur.format(stats().pipeline)} en oportunidades abiertas.</p></div>
+    <div class="head-actions"><button class="btn" data-nav="empresas">${ico("plus")}<span>Añadir prospectos</span></button></div></div>
+    ${!P.length ? `<div class="card empty"><strong>Tu pipeline está vacío</strong>Asigna un estado comercial a cualquier empresa desde la tabla o su ficha para convertirla en prospecto.<div class="row"><button class="btn primary" data-nav="empresas">Ir a Empresas</button></div></div>` : `
+    <div class="kanban">${cols.map(({ s, items }) => `<section class="k-col"><div class="k-col-head"><span class="pill" style="background:${s.color}1f;color:${s.color}"><span class="dot"></span>${esc(s.label)}</span><span class="muted">${items.length}${items.some(c => c.crm.amount) ? " · " + eur.format(items.reduce((a, c) => a + (+c.crm.amount || 0), 0)) : ""}</span></div>${items.map(card).join("")}</section>`).join("")}</div>
+    <div class="stage-tabs">${cols.map(({ s, items }) => `<button class="chip ${ms === s.id ? "on" : ""}" data-act="mstage" data-id="${s.id}">${esc(s.label)} <b>${items.length}</b></button>`).join("")}</div>
+    <div class="stage-list">${(cols.find(x => x.s.id === ms)?.items || []).map(card).join("") || `<p class="muted">Sin prospectos en este estado.</p>`}</div>`}`;
+};
+</script>
+<script>
+/* ---------- AJUSTES ---------- */
+VIEWS.ajustes = () => {
+  const svc = S.settings.service;
+  return `<div class="page-head"><div><h1>Ajustes</h1><p>Tu servicio, estados, etiquetas y copias de seguridad.</p></div></div>
+  <div class="settings-grid">
+    <section class="card"><h2>Tu producto o servicio</h2>
+      <p class="muted small" style="margin-top:-6px">El análisis de cada empresa se adapta a lo que configures aquí.</p>
+      <div class="field"><label for="svc-name">Nombre</label><input class="input" id="svc-name" data-svc="name" value="${esc(svc.name)}"></div>
+      <div class="field" style="margin-top:12px"><label for="svc-sum">Descripción</label><textarea class="input" id="svc-sum" data-svc="summary" rows="2">${esc(svc.summary)}</textarea></div>
+      <div class="field" style="margin-top:12px"><span class="lbl">Módulos o funcionalidades</span>
+        <div class="mod-list">${svc.modules.map((m, i) => `<span class="mod">${esc(m)}<button data-act="del-mod" data-i="${i}" aria-label="Quitar ${esc(m)}">${ico("x")}</button></span>`).join("")}</div>
+        <div class="row" style="margin-top:8px"><input class="input" id="new-mod" placeholder="Añadir módulo…" style="flex:1 1 200px"><button class="btn" data-act="add-mod">${ico("plus")}<span>Añadir</span></button></div></div>
+      <div class="grid-form" style="margin-top:12px">
+        <div class="field"><label for="svc-cnae">CNAE objetivo (prefijos)</label><input class="input" id="svc-cnae" data-svc="targetCnae" value="${esc(svc.targetCnae.join(", "))}"></div>
+        <div class="field"><label for="svc-kw">Palabras clave del sector</label><input class="input" id="svc-kw" data-svc="targetKeywords" value="${esc(svc.targetKeywords.join(", "))}"></div>
+      </div>
+      <p class="small muted" style="margin:10px 0 0">Las oportunidades se detectan por el nombre de los módulos: comandas/QR/pedidos, fichajes/planning, reservas e inventario/insumos/escandallos. Con otros módulos, la ficha propone el encaje general del servicio.</p>
+    </section>
+    <section class="card"><div class="card-head"><h2>Estados comerciales</h2><button class="btn sm" data-act="add-status">${ico("plus")}<span>Añadir estado</span></button></div>
+      <p class="muted small" style="margin-top:-6px">La fase decide en qué paso del embudo cuenta cada estado.</p>
+      ${S.settings.statuses.map((s, i) => `<div class="st-row"><input type="color" value="${s.color}" data-st="color" data-i="${i}" aria-label="Color"><input class="input" value="${esc(s.label)}" data-st="label" data-i="${i}" aria-label="Nombre del estado">
+        <select class="select" data-st="stage" data-i="${i}" aria-label="Fase">${STAGE_OPTS.map(o => `<option value="${o.n}" ${s.stage === o.n ? "selected" : ""}>${o.label}</option>`).join("")}</select>
+        <button class="btn sm icon ghost" data-act="del-status" data-i="${i}" aria-label="Eliminar">${ico("trash")}</button></div>`).join("")}
+    </section>
+    <section class="card"><div class="card-head"><h2>Etiquetas</h2></div>
+      ${S.settings.tags.map((t, i) => `<div class="st-row" style="grid-template-columns:auto minmax(0,1fr) auto"><input type="color" value="${t.color}" data-tg="color" data-i="${i}" aria-label="Color"><input class="input" value="${esc(t.label)}" data-tg="label" data-i="${i}" aria-label="Nombre"><button class="btn sm icon ghost" data-act="del-tag" data-i="${i}" aria-label="Eliminar">${ico("trash")}</button></div>`).join("")}
+      <div class="row" style="margin-top:8px"><input class="input" id="new-tag" placeholder="Nueva etiqueta…" style="flex:1 1 200px"><button class="btn" data-act="add-tag">${ico("plus")}<span>Crear</span></button></div>
+    </section>
+    <section class="card"><h2>Búsquedas guardadas</h2>
+      ${S.settings.savedSearches.length ? S.settings.savedSearches.map((s, i) => `<div class="conn"><div style="min-width:0"><b>${esc(s.name)}</b><div class="small muted">${describeFilters(s.filters)}</div></div><div class="row"><button class="btn sm" data-act="load-search" data-id="${s.id}">Abrir</button><button class="btn sm icon ghost" data-act="del-search" data-i="${i}" aria-label="Eliminar">${ico("trash")}</button></div></div>`).join("") : `<p class="muted small">Guarda combinaciones de filtros desde la vista Empresas.</p>`}
+    </section>
+    <section class="card"><h2>Fuente de datos</h2>
+      <div class="conn" style="border-top:0"><div style="min-width:0"><b>OpenStreetMap</b><div class="small muted">Bares, restaurantes, cafeterías y demás locales de las 52 provincias: nombre, sector, dirección, municipio, teléfono, email, web, redes, horario y servicios cuando están publicados. Gratis, sin clave ni registro. Datos © colaboradores de OpenStreetMap (ODbL).</div></div><span class="pill" style="background:var(--good-soft);color:var(--good)"><span class="dot"></span>Gratis</span></div>
+      <div class="row" style="margin-top:6px"><button class="btn sm" data-act="diagnose">Comprobar conexión</button></div>
+      <p class="small muted" style="margin:12px 0 0">El CIF, el CNAE, los empleados y las valoraciones no son públicos en fuentes gratuitas. Puedes añadirlos a mano en cada ficha.</p>
+    </section>
+    <section class="card"><h2>Datos y copias</h2>
+      <p class="muted small" style="margin-top:-6px">Tus datos se guardan en este navegador, en este ordenador. Exporta una copia de vez en cuando: si borras los datos del navegador, se pierden.</p>
+      <div class="row"><button class="btn" data-act="export-all-xlsx">${ico("download")}<span>Exportar todo a Excel</span></button><button class="btn" data-act="export-all-json">${ico("download")}<span>Copia completa JSON</span></button><button class="btn" data-act="import">${ico("upload")}<span>Importar</span></button></div>
+      <div class="row" style="margin-top:12px">${[...S.companies.values()].some(c => c.demo) ? `<button class="btn danger" data-act="del-demo">Borrar ejemplos ficticios</button>` : ""}<button class="btn danger" data-act="del-all">Borrar todas las empresas</button></div>
+    </section>
+  </div>`;
+};
+function describeFilters(F) {
+  const L = { q: "Texto", province: "Provincia", municipality: "Municipio", sector: "Sector", cnae: "CNAE", foundedFrom: "Desde", foundedTo: "Hasta", ageMin: "Antigüedad ≥", ageMax: "Antigüedad ≤", empMin: "Empleados ≥", empMax: "Empleados ≤", size: "Tamaño", ratingMin: "Valoración ≥", reviewsMin: "Reseñas ≥", web: "Web", booking: "Reservas", scoreMin: "Potencial ≥", prospect: "CRM", tag: "Etiqueta", follow: "Seguimiento" };
+  const out = [];
+  for (const [k, v] of Object.entries(F || {})) {
+    if (k === "status1" || v === "" || v === undefined || (Array.isArray(v) && !v.length)) continue;
+    if (k === "statuses") { out.push("Estado: " + v.map(id => statusById(id)?.label).filter(Boolean).join(", ")); continue; }
+    let t = v; if (k === "tag") t = tagById(v)?.label; if (/^@-?\d+$/.test(v)) t = `hace ${-v.slice(1)} días`; if (k === "prospect") t = v === "yes" ? "sí" : "no"; if (k === "web" || k === "booking") t = v === "yes" ? "sí" : "no";
+    out.push(`${L[k] || k}: ${esc(t)}`);
+  }
+  return out.join(" · ") || "Sin filtros";
+}
+
+/* ---------- FICHA ---------- */
+function renderDrawer() {
+  const c = S.companies.get(S.openId); const L = $("#layer");
+  if (!c) { S.openId = null; L.innerHTML = ""; return; }
+  const bodyScroll = $(".d-body")?.scrollTop || 0; const first = !$(".drawer");
+  const tabs = [["resumen", "Análisis"], ["datos", "Datos"], ["crm", "Seguimiento"], ["historial", `Historial (${c.interactions.length})`], ["contactos", `Contactos (${c.contacts.length})`]];
+  L.className = first ? "anim" : "";
+  L.innerHTML = `<div class="scrim" data-act="close"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="Ficha de empresa">
+    <div class="d-head"><div class="d-top"><div class="d-title"><h2>${esc(val(c, "name"))}</h2><div class="d-sub">${esc([val(c, "sector"), val(c, "municipality"), val(c, "province")].filter(Boolean).join(" · ")) || "Sin sector ni ubicación"}</div></div>
+      <button class="btn icon ghost" data-act="close" aria-label="Cerrar">${ico("x")}</button></div>
+      <div class="d-ctrl">${statusSelect(c)}${scoreHTML(c)}
+        ${val(c, "phone") ? `<a class="btn sm" href="tel:${esc(val(c, "phone"))}">${ico("phone")}<span>Llamar</span></a>` : ""}
+        ${val(c, "email") ? `<a class="btn sm" href="mailto:${esc(val(c, "email"))}">${ico("mail")}<span>Email</span></a>` : ""}
+        ${val(c, "web") ? `<a class="btn sm" href="${esc(urlOf(val(c, "web")))}" target="_blank" rel="noopener">${ico("globe")}<span>Web</span></a>` : ""}
+        <button class="btn sm" data-act="done" data-id="${c.id}">${ico("check")}<span>Registrar contacto</span></button></div>
+      <div class="tabs" role="tablist">${tabs.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${S.tab === k}" data-tab="${k}">${l}</button>`).join("")}</div></div>
+    <div class="d-body">${c.demo ? `<div class="demo-flag">Empresa ficticia de ejemplo. Sus datos no son reales.</div>` : ""}${TABS[S.tab](c)}</div></aside>`;
+  const b = $(".d-body"); if (b) b.scrollTop = bodyScroll;
+}
+const TABS = {};
+TABS.resumen = c => {
+  const w = whyContact(c), sc = w.sc, s = sc.score;
+  const col = s === null ? "var(--ink-3)" : s >= 70 ? "var(--good)" : s >= 45 ? "var(--warm)" : "var(--hot)";
+  return `<section class="card why"><h3>¿Por qué contactar con este negocio?</h3>
+      <p class="lead"><b>Potencial comercial: ${s === null ? "sin datos suficientes" : s + "/100"}</b></p>
+      <p>${esc(w.summary)}</p>
+      ${w.opps.length ? `<dl style="margin:0"><dt>Oportunidades detectadas</dt>${w.opps.map(o => `<dd>Podría beneficiarse de ${esc(o.what)} <span class="muted small">(${esc(o.mod)})</span>.</dd>`).join("")}
+        <dt>Argumento recomendado</dt><dd>${esc(w.arg.charAt(0).toUpperCase() + w.arg.slice(1))}.</dd></dl>` : `<p class="muted small" style="margin:0">No hay señales suficientes para sugerir una oportunidad concreta. Completa sector, empleados, reseñas o reservas online.</p>`}
+    </section>
+    <section class="card"><h3>Cómo se calcula la puntuación</h3>
+      <div class="gauge"><div class="ring" style="--p:${s ?? 0};--c:${col}"><div><div><b>${s ?? "—"}</b><small>de 100</small></div></div></div>
+        <div class="factors">${sc.factors.map(f => `<div class="factor"><span class="fx ${f.kind}">${f.kind === "plus" ? "+" : f.kind === "minus" ? "−" : "?"}</span><div><b>${f.label}</b><div class="small muted">${esc(f.note)}</div></div><span class="fp">${f.pts === null ? "—" : `${f.pts}/${f.max}`}</span></div>`).join("")}</div></div>
+      <p class="small muted" style="margin:14px 0 0">Puntuación orientativa basada en ${sc.signals} de ${sc.total} señales observables; no es una probabilidad de compra. Las señales que no se conocen no suman ni restan; cuantas menos haya, más prudente es la puntuación.</p>
+    </section>
+    <section class="card"><h3>Etiquetas</h3><div class="row">${S.settings.tags.map(t => { const on = (c.crm.tags || []).includes(t.id); return `<button class="chip ${on ? "on" : ""}" data-act="toggle-tag" data-tag="${t.id}" style="${on ? `background:${t.color}1c;border-color:${t.color};color:${t.color}` : ""}">${esc(t.label)}</button>`; }).join("")}</div></section>`;
+};
+TABS.datos = c => {
+  const row = (label, k, html) => `<div>${label}</div><div class="val">${html ?? (val(c, k) !== null ? cellVal(c, k) : NA)} ${srcBadge(c, k)}</div>`;
+  const ob = val(c, "onlineBooking"), y = ageYears(c);
+  return `<section class="card"><div class="card-head"><h3>Información empresarial</h3><div class="row"><button class="btn sm" data-act="refresh-api">${ico("refresh")}<span>Actualizar desde fuentes</span></button><button class="btn sm" data-act="edit-company">${ico("edit")}<span>Editar datos</span></button></div></div>
+    <div class="kv">
+      ${row("Empresa", "name")}${row("CIF/NIF", "cif")}${row("Sector", "sector")}${row("CNAE", "cnae")}${val(c, "activity") ? row("Objeto social", "activity") : ""}${val(c, "capital") ? row("Capital social", "capital") : ""}
+      ${row("Fecha de constitución", "foundedAt")}
+      <div>Antigüedad</div><div class="val">${y !== null ? fmtAge(y) + ' <span class="src calc" title="Calculado desde la fecha de constitución">Calc.</span>' : NA}</div>
+      ${row("Empleados", "employees")}
+      <div>Tamaño aproximado</div><div class="val">${sizeOf(c) ? esc(sizeOf(c)) + ' <span class="src estimated" title="Estimado a partir del número de empleados">Est.</span>' : NA}</div>
+    </div></section>
+    <section class="card"><h3>Contacto y ubicación</h3><div class="kv">
+      ${row("Dirección", "address")}${row("Municipio", "municipality")}${row("Provincia", "province")}${row("Teléfono", "phone")}${row("Email", "email")}${row("Página web", "web")}
+    </div></section>
+    <section class="card"><h3>Presencia digital</h3><div class="kv">
+      ${row("Valoración Google", "rating")}${row("Número de reseñas", "reviews")}${row("Redes sociales", "social")}${row("Horario", "hours")}${row("Servicios", "services")}${val(c, "brand") ? row("Cadena / marca", "brand") : ""}
+      ${row("Reservas online", "onlineBooking", ob === null ? NA : (ob === true || ob === "true") ? "Sí, detectadas" : "No detectadas")}
+    </div></section>
+    ${c.ext?.osmUrl || c.ext?.mapsUrl || c.ext?.bormeUrl ? `<div class="row">${c.ext.osmUrl ? `<a class="btn sm" href="${esc(c.ext.osmUrl)}" target="_blank" rel="noopener">${ico("map")}<span>Ver en el mapa</span></a>` : ""}${c.ext.mapsUrl ? `<a class="btn sm" href="${esc(c.ext.mapsUrl)}" target="_blank" rel="noopener">${ico("map")}<span>Ver en Google Maps</span></a>` : ""}${c.ext.bormeUrl ? `<a class="btn sm" href="${esc(c.ext.bormeUrl)}" target="_blank" rel="noopener">${ico("doc")}<span>Ver publicación en el BORME</span></a>` : ""}</div>` : ""}
+    <p class="small muted" style="margin:0">Al actualizar datos externos no se modifican el estado, las notas, los contactos ni el historial.</p>`;
+};
+TABS.crm = c => {
+  const k = c.crm, T = (f, l, type = "text", extra = "") => `<div class="field"><label for="crm-${f}">${l}</label><input class="input" id="crm-${f}" type="${type}" data-crm="${f}" value="${esc(k[f] ?? "")}" ${extra}></div>`;
+  const stg = stageOf(c);
+  return `<section class="card"><h3>Seguimiento</h3><div class="grid-form">
+      ${T("nextAction", "Próxima acción", "text", 'placeholder="p. ej. Llamar para agendar demo"')}${T("nextActionDate", "Fecha de próxima acción", "date")}
+      ${T("nextFollowUp", "Próximo seguimiento", "date")}${T("contactPerson", "Persona de contacto")}
+      <div class="field"><label for="crm-channel">Medio de contacto</label><select class="select" id="crm-channel" data-crm="channel"><option value="">—</option>${CHANNELS.map(x => `<option ${k.channel === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+      ${T("result", "Resultado del último contacto")}
+      ${T("firstContact", "Primer contacto", "date")}${T("lastContact", "Último contacto", "date")}
+    </div></section>
+    <section class="card"><h3>Oportunidad</h3><div class="grid-form">
+      ${T("amount", "Importe potencial (€)", "number", 'min="0" step="1" inputmode="decimal"')}${T("product", "Producto/servicio ofrecido", "text", `placeholder="${esc(S.settings.service.name)}"`)}
+      ${T("trialStart", "Inicio de prueba", "date")}${T("trialEnd", "Fin de prueba", "date")}
+      ${T("contractDate", "Fecha de contratación", "date")}
+      ${stg === -1 || k.lossReason ? T("lossReason", "Motivo de pérdida") : ""}
+    </div></section>
+    <section class="card"><div class="field"><label for="crm-notes">Notas comerciales</label><textarea class="input" id="crm-notes" data-crm="notes" rows="5" placeholder="Detalles del negocio, objeciones, quién decide…">${esc(k.notes || "")}</textarea></div></section>
+    <div class="row" style="justify-content:space-between"><span class="small muted">Los cambios se guardan al salir de cada campo.</span><button class="btn danger sm" data-act="delete-company">${ico("trash")}<span>Eliminar empresa</span></button></div>`;
+};
+TABS.historial = c => {
+  const list = c.interactions.slice().sort((a, b) => a.date === b.date ? 0 : a.date < b.date ? 1 : -1);
+  return `<section class="card"><h3>Añadir interacción</h3><div class="grid-form">
+      <div class="field"><label for="in-date">Fecha</label><input class="input" id="in-date" type="date" value="${todayISO()}"></div>
+      <div class="field"><label for="in-type">Tipo</label><select class="select" id="in-type">${INTERACTION_TYPES.filter(t => t !== "Estado").map(t => `<option>${t}</option>`).join("")}</select></div></div>
+      <div class="field" style="margin-top:12px"><label for="in-text">Descripción</label><textarea class="input" id="in-text" rows="3" placeholder="Qué pasó y qué se acordó"></textarea></div>
+      <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn primary" data-act="add-interaction">${ico("plus")}<span>Añadir al historial</span></button></div></section>
+    <section class="card"><h3>Historial</h3>${list.length ? `<div class="timeline">${list.map(i => `<div class="tl"><span class="tl-dot" style="${i.type === "Estado" ? "background:var(--violet);box-shadow:0 0 0 2px var(--violet)" : ""}"></span><div style="min-width:0"><div class="tl-head"><b>${fmtDate(i.date)}</b> · ${esc(i.type)} <button class="btn sm icon ghost" data-act="del-interaction" data-iid="${i.id}" aria-label="Eliminar" style="float:right;min-height:28px;width:28px">${ico("x")}</button></div><div class="tl-text">${esc(i.text)}</div></div></div>`).join("")}</div>` : `<p class="muted small">Aún no hay interacciones. Registra la primera llamada o visita.</p>`}</section>`;
+};
+TABS.contactos = c => `<section class="card"><h3>Personas de contacto</h3>
+    ${c.contacts.map(k => `<div class="contact-row"><div style="min-width:0"><b>${esc(k.name)}</b>${k.role ? ` <span class="muted small">${esc(k.role)}</span>` : ""}<div class="small">${[k.phone ? `<a href="tel:${esc(k.phone)}">${esc(k.phone)}</a>` : "", k.email ? `<a href="mailto:${esc(k.email)}">${esc(k.email)}</a>` : ""].filter(Boolean).join(" · ") || '<span class="muted">Sin datos de contacto</span>'}</div></div><button class="btn sm icon ghost" data-act="del-contact" data-kid="${k.id}" aria-label="Eliminar">${ico("trash")}</button></div>`).join("") || `<p class="muted small">Sin contactos todavía.</p>`}
+  </section>
+  <section class="card"><h3>Añadir contacto</h3><div class="grid-form">
+    <div class="field"><label for="k-name">Nombre</label><input class="input" id="k-name"></div><div class="field"><label for="k-role">Cargo</label><input class="input" id="k-role" placeholder="Propietario, gerente…"></div>
+    <div class="field"><label for="k-phone">Teléfono</label><input class="input" id="k-phone" type="tel"></div><div class="field"><label for="k-email">Email</label><input class="input" id="k-email" type="email"></div></div>
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn primary" data-act="add-contact">${ico("plus")}<span>Añadir contacto</span></button></div></section>`;
+
+/* ---------- Modales ---------- */
+function modal(title, body, foot, wide) {
+  const m = document.createElement("div"); m.className = "modal-wrap"; m.id = "modal";
+  m.innerHTML = `<div class="scrim" data-act="close-modal"></div><div class="modal ${wide ? "wide" : ""}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="m-head"><h3>${esc(title)}</h3><button class="btn icon ghost" data-act="close-modal" aria-label="Cerrar">${ico("x")}</button></div><div class="m-body">${body}</div><div class="m-foot">${foot}</div></div>`;
+  closeModal(); document.body.appendChild(m); setTimeout(() => $("#modal input:not([type=checkbox]), #modal textarea")?.focus(), 30);
+}
+function closeModal() { $("#modal")?.remove(); }
+function companyForm(c) {
+  const body = `<div class="notice">${ico("info")}<div>Indica de dónde sale cada dato. Deja vacío lo que no sepas: se mostrará como "No disponible".</div></div>
+  <div class="grid-form">${FIELDS.map(f => { const x = c?.f?.[f.k];
+    const input = f.type === "bool" ? `<select class="select" data-ff="${f.k}"><option value="">No disponible</option><option value="true" ${x?.v === true || x?.v === "true" ? "selected" : ""}>Sí</option><option value="false" ${x?.v === false || x?.v === "false" ? "selected" : ""}>No</option></select>`
+      : `<input class="input" data-ff="${f.k}" type="${f.type || "text"}" ${f.step ? `step="${f.step}"` : ""} ${f.type === "number" ? 'min="0"' : ""} value="${esc(x?.v ?? "")}" ${f.k === "name" ? "required" : ""}>`;
+    return `<div class="field"><label>${f.label}${f.k === "name" ? " *" : ""}</label><div class="src-field">${input}<select class="select" data-fs="${f.k}" aria-label="Tipo de dato de ${f.label}">${["manual", "verified", "api", "estimated"].map(s => `<option value="${s}" ${(x?.src || "manual") === s ? "selected" : ""}>${SRC[s].label.replace("Introducido manualmente", "Manual").replace("Procedente de API", "API")}</option>`).join("")}</select></div></div>`; }).join("")}</div>
+  <div class="field"><label for="ff-origin">Fuente (opcional)</label><input class="input" id="ff-origin" placeholder="p. ej. Web del local, BORME 12/03/2025, visita" value="${esc(c ? "" : "")}"></div>`;
+  modal(c ? "Editar datos de la empresa" : "Añadir empresa", body, `<button class="btn" data-act="close-modal">Cancelar</button><button class="btn primary" data-act="save-company" data-id="${c?.id || ""}">${ico("save")}<span>${c ? "Guardar cambios" : "Añadir empresa"}</span></button>`, true);
+}
+function doneForm(c) {
+  const next = addDays(todayISO(), 3);
+  const body = `<p style="margin:0"><b>${esc(val(c, "name"))}</b> · ${statusPill(c)}</p>
+    <div class="grid-form"><div class="field"><label for="d-type">Tipo</label><select class="select" id="d-type">${INTERACTION_TYPES.filter(t => t !== "Estado").map(t => `<option>${t}</option>`).join("")}</select></div>
+    <div class="field"><label for="d-status">Nuevo estado</label>${statusSelect(c, 'id="d-status" data-act="noop"').replace('data-act="status"', "")}</div></div>
+    <div class="field"><label for="d-text">Resultado</label><textarea class="input" id="d-text" rows="3" placeholder="Qué pasó en este contacto"></textarea></div>
+    <div class="grid-form"><div class="field"><label for="d-next">Siguiente acción</label><input class="input" id="d-next" value="${esc(c.crm.nextAction || "")}" placeholder="p. ej. Enviar propuesta"></div>
+    <div class="field"><label for="d-date">Fecha</label><input class="input" id="d-date" type="date" value="${next}"></div></div>
+    <div class="row">${[1, 3, 7, 14, 30].map(n => `<button class="chip" data-act="quick-date" data-n="${n}">+${n} d</button>`).join("")}<button class="chip" data-act="quick-date" data-n="">Sin fecha</button></div>`;
+  modal("Registrar contacto", body, `<button class="btn" data-act="close-modal">Cancelar</button><button class="btn primary" data-act="save-done" data-id="${c.id}">${ico("check")}<span>Guardar y programar</span></button>`);
+}
+function toast(msg) { $(".toast")?.remove(); const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3200); }
+</script>
+<script>
+/* ============ BUSCAR: OpenStreetMap directamente desde el navegador (gratis, sin clave) ============ */
+const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass.private.coffee/api/interpreter"];
+const PROVS = [
+  ["A Coruña", ["ES-C"], "Coruña"], ["Álava", ["ES-VI"], "lava|Araba"], ["Albacete", ["ES-AB"]], ["Alicante", ["ES-A"], "Alicante|Alacant"], ["Almería", ["ES-AL"]],
+  ["Asturias", ["ES-O", "ES-AS"], "Asturias|Asturies"], ["Ávila", ["ES-AV"]], ["Badajoz", ["ES-BA"]], ["Barcelona", ["ES-B"]], ["Bizkaia", ["ES-BI"], "Bizkaia|Vizcaya"],
+  ["Burgos", ["ES-BU"]], ["Cáceres", ["ES-CC"]], ["Cádiz", ["ES-CA"]], ["Cantabria", ["ES-S", "ES-CB"], "Cantabria"], ["Castellón", ["ES-CS"], "Castell"],
+  ["Ceuta", ["ES-CE"]], ["Ciudad Real", ["ES-CR"]], ["Córdoba", ["ES-CO"]], ["Cuenca", ["ES-CU"]], ["Gipuzkoa", ["ES-SS"], "Gipuzkoa|Guip"], ["Girona", ["ES-GI"], "Girona|Gerona"],
+  ["Granada", ["ES-GR"]], ["Guadalajara", ["ES-GU"]], ["Huelva", ["ES-H"]], ["Huesca", ["ES-HU"]], ["Illes Balears", ["ES-PM", "ES-IB"], "Balear"], ["Jaén", ["ES-J"]],
+  ["La Rioja", ["ES-LO", "ES-RI"], "Rioja"], ["Las Palmas", ["ES-GC"], "Las Palmas"], ["León", ["ES-LE"]], ["Lleida", ["ES-L"], "Lleida|L.rida"], ["Lugo", ["ES-LU"]],
+  ["Madrid", ["ES-M", "ES-MD"], "^Madrid$|Comunidad de Madrid"], ["Málaga", ["ES-MA"]], ["Melilla", ["ES-ML"]], ["Murcia", ["ES-MU", "ES-MC"], "^Murcia$|Regi.n de Murcia"],
+  ["Navarra", ["ES-NA", "ES-NC"], "Navarra|Nafarroa"], ["Ourense", ["ES-OR"], "Ourense|Orense"], ["Palencia", ["ES-P"]], ["Pontevedra", ["ES-PO"]], ["Salamanca", ["ES-SA"]],
+  ["Santa Cruz de Tenerife", ["ES-TF"], "Tenerife"], ["Segovia", ["ES-SG"]], ["Sevilla", ["ES-SE"]], ["Soria", ["ES-SO"]], ["Tarragona", ["ES-T"]], ["Teruel", ["ES-TE"]],
+  ["Toledo", ["ES-TO"]], ["Valencia", ["ES-V"], "^Val.ncia|Valencia$"], ["Valladolid", ["ES-VA"]], ["Zamora", ["ES-ZA"]], ["Zaragoza", ["ES-Z"]]
+].map(([name, iso, rx]) => ({ name, iso, rx: rx || "^" + name + "$" }));
+const CATS = {
+  restaurant: { label: "Restaurantes", q: '["amenity"="restaurant"]' },
+  bar: { label: "Bares y pubs", q: '["amenity"~"^(bar|pub|biergarten)$"]' },
+  cafe: { label: "Cafeterías", q: '["amenity"="cafe"]' },
+  fast_food: { label: "Comida rápida", q: '["amenity"~"^(fast_food|food_court)$"]' },
+  ice_cream: { label: "Heladerías", q: '["amenity"="ice_cream"]' },
+  bakery: { label: "Panaderías y pastelerías", q: '["shop"~"^(bakery|pastry|confectionery)$"]' },
+  hotel: { label: "Hoteles y alojamientos", q: '["tourism"~"^(hotel|hostel|guest_house|motel)$"]' },
+  nightclub: { label: "Discotecas", q: '["amenity"="nightclub"]' }
+};
+const KIND = { restaurant: "Restaurante", bar: "Bar", pub: "Pub", biergarten: "Cervecería", cafe: "Cafetería", fast_food: "Comida rápida", food_court: "Zona de restauración", ice_cream: "Heladería", nightclub: "Discoteca", bakery: "Panadería", pastry: "Pastelería", confectionery: "Confitería", hotel: "Hotel", hostel: "Albergue", guest_house: "Casa de huéspedes", motel: "Motel" };
+const CUISINE = { spanish: "española", regional: "regional", tapas: "tapas", italian: "italiana", pizza: "pizzería", chinese: "china", japanese: "japonesa", sushi: "sushi", mexican: "mexicana", burger: "hamburguesería", seafood: "marisquería", mediterranean: "mediterránea", indian: "india", kebab: "kebab", asian: "asiática", argentinian: "argentina", steak_house: "asador", coffee_shop: "café", vegetarian: "vegetariana", vegan: "vegana", international: "internacional", chicken: "pollos", sandwich: "bocadillería", fish: "pescado", grill: "parrilla", basque: "vasca", galician: "gallega", catalan: "catalana", andalusian: "andaluza", peruvian: "peruana", thai: "tailandesa", french: "francesa", churros: "churrería", breakfast: "desayunos", wine: "vinos", beer: "cervezas" };
+const provByName = n => PROVS.find(p => norm(p.name) === norm(n));
+const provinces = () => PROVS.map(p => p.name);
+const DAYMS = 864e5;
+
+function initSearch() {
+  S.status = { local: true };
+  S.search = { running: false, cancel: false, done: 0, total: 0, label: "", results: [], sel: new Set(), q: "", hideDup: false, assign: "", errors: [], show: 120, munis: {}, sectorF: "", minScore: "", sortBy: "score",
+    form: { cats: ["restaurant", "bar", "cafe"], oprov: "", omun: "", needPhone: false, needWeb: false } };
+}
+
+/* ---------- Overpass ---------- */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function overpass(query, timeoutS = 120, onWait) {
+  const errors = []; let netFails = 0;
+  for (const ep of OVERPASS) {
+    const host = new URL(ep).host;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (S.search?.cancel) throw new Error("Búsqueda detenida");
+      try {
+        const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), (timeoutS + 30) * 1000);
+        S._abort = ctrl;
+        const r = await fetch(ep, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" }, body: "data=" + encodeURIComponent(query), signal: ctrl.signal });
+        clearTimeout(t);
+        const txt = await r.text();
+        if (r.status === 429 || r.status === 504) { errors.push(`${host}: ${r.status === 429 ? "pide esperar" : "saturado"}`); if (attempt === 0) { onWait && onWait(`El servidor de mapas está ocupado. Reintentando en 10 segundos`); await sleep(10000); continue; } break; }
+        if (!r.ok) { errors.push(`${host}: error ${r.status}`); if (r.status === 400) { console.error(query, txt); throw new Error("Consulta rechazada por OpenStreetMap: " + (txt.match(/Error<\/strong>:([^<]+)/) || [, "error 400"])[1].trim()); } break; }
+        let j; try { j = JSON.parse(txt); } catch (_) { errors.push(`${host}: respuesta no válida`); break; }
+        if (j.remark && /error|timed out|out of memory/i.test(j.remark) && !(j.elements || []).length) { errors.push(`${host}: ${j.remark.slice(0, 120)}`); break; }
+        return j;
+      } catch (e) {
+        if (S.search?.cancel) throw new Error("Búsqueda detenida");
+        if (/rechazada/.test(e.message)) throw e;
+        if (e.name === "AbortError") errors.push(`${host}: tiempo agotado`); else { netFails++; errors.push(`${host}: sin conexión`); }
+        break;
+      }
+    }
+  }
+  if (netFails === OVERPASS.length) { const e = new Error(BLOCKED_MSG); e.blocked = true; throw e; }
+  throw new Error("Los servidores de mapas no responden ahora mismo (" + errors.join(" · ") + "). Espera un minuto y vuelve a intentarlo.");
+}
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch (_) { return true; } })();
+const BLOCKED_MSG = IN_FRAME
+  ? "Esta vista previa bloquea la conexión a internet. Abre la app en tu navegador desde su dirección web (o descarga el archivo y ábrelo con Chrome, Edge o Safari)."
+  : "Tu navegador no consigue conectar con los servidores de mapas. Comprueba la conexión a internet; si estás en una red de empresa o con un antivirus que filtra webs, prueba con otra red o con los datos del móvil.";
+const reEsc = s => String(s).replace(/[\\^$.*+?()[\]{}|"]/g, m => "\\" + m);
+async function provinceAreas(prov) {
+  const key = "area-" + prov.name; const hit = await Store.cacheGet(key, 60 * DAYMS); if (hit && hit.length) return hit;
+  const a = await overpass(`[out:json][timeout:60];(${prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("")});out ids;`, 60);
+  let ids = (a.elements || []).filter(e => e.type === "area").map(e => e.id);
+  if (!ids.length) {
+    const b = await overpass(`[out:json][timeout:90];area["ISO3166-1"="ES"]["admin_level"="2"]->.es;rel(area.es)["boundary"="administrative"]["admin_level"~"^(4|6)$"]["name"~"${prov.rx}",i];out ids;`, 90);
+    ids = (b.elements || []).filter(e => e.type === "relation").map(e => 3600000000 + e.id);
+  }
+  if (!ids.length) throw new Error(`No se encuentra la provincia de ${prov.name} en OpenStreetMap`);
+  await Store.cacheSet(key, ids); return ids;
+}
+const areaSet = ids => `area(id:${ids.join(",")})->.p;`;
+async function municipalityShapes(prov, ids) {
+  const key = "munis-" + prov.name; const hit = await Store.cacheGet(key, 60 * DAYMS); if (hit) return hit;
+  const j = await overpass(`[out:json][timeout:180];${areaSet(ids)}rel(area.p)["boundary"="administrative"]["admin_level"="8"];out geom;`, 180);
+  const shapes = [];
+  for (const r of j.elements || []) {
+    if (r.type !== "relation" || !r.tags?.name) continue;
+    const segs = []; let a = 90, b = 180, c = -90, d = -180;
+    for (const m of r.members || []) {
+      if (m.type !== "way" || !m.geometry || m.role === "label" || m.role === "admin_centre") continue;
+      for (let i = 1; i < m.geometry.length; i++) {
+        const p = m.geometry[i - 1], q = m.geometry[i];
+        segs.push([+p.lat.toFixed(5), +p.lon.toFixed(5), +q.lat.toFixed(5), +q.lon.toFixed(5)]);
+        a = Math.min(a, p.lat, q.lat); c = Math.max(c, p.lat, q.lat); b = Math.min(b, p.lon, q.lon); d = Math.max(d, p.lon, q.lon);
+      }
+    }
+    if (segs.length) shapes.push({ name: r.tags.name, bbox: [a, b, c, d], segs });
+  }
+  if (shapes.length) await Store.cacheSet(key, shapes);
+  return shapes;
+}
+function inside(lat, lon, s) {
+  const b = s.bbox; if (lat < b[0] || lat > b[2] || lon < b[1] || lon > b[3]) return false;
+  let c = false;
+  for (const [y1, x1, y2, x2] of s.segs) if ((y1 > lat) !== (y2 > lat) && lon < (x2 - x1) * (lat - y1) / (y2 - y1) + x1) c = !c;
+  return c;
+}
+const muniOf = (lat, lon, shapes) => { if (lat == null) return null; for (const s of shapes) if (inside(lat, lon, s)) return s.name; return null; };
+function osmToResult(el, municipality, province) {
+  const t = el.tags || {};
+  const kind = t.amenity || t.shop || t.tourism;
+  const cuisine = (t.cuisine || "").split(";").map(c => CUISINE[c.trim().toLowerCase()]).filter(Boolean);
+  const first = v => v ? String(v).split(";")[0].trim() : null;
+  const street = [t["addr:street"] || t["addr:place"], t["addr:housenumber"]].filter(Boolean).join(" ");
+  const services = [t.outdoor_seating === "yes" && "Terraza", /yes|only/.test(t.takeaway || "") && "Para llevar", /yes/.test(t.delivery || "") && "A domicilio", /yes|required|recommended/.test(t.reservation || "") && "Reservas"].filter(Boolean);
+  return {
+    osmId: `${el.type}/${el.id}`, osmUrl: `https://www.openstreetmap.org/${el.type}/${el.id}`,
+    name: t.name, address: [street, t["addr:postcode"]].filter(Boolean).join(", ") || null,
+    municipality: municipality || t["addr:city"] || null, province,
+    phone: first(t.phone || t["contact:phone"] || t["contact:mobile"] || t.mobile), email: first(t.email || t["contact:email"]),
+    web: first(t.website || t["contact:website"] || t.url),
+    social: [t["contact:instagram"] || t.instagram, t["contact:facebook"] || t.facebook, t["contact:tiktok"]].filter(Boolean).join(", ") || null,
+    sector: (KIND[kind] || "Negocio") + (cuisine.length ? " · " + cuisine.slice(0, 2).join(", ") : ""), kind: KIND[kind] || "Otro",
+    hours: t.opening_hours || null, services: services.join(", ") || null, brand: t.brand || null,
+    lat: el.lat ?? el.center?.lat ?? null, lon: el.lon ?? el.center?.lon ?? null
+  };
+}
+async function osmSearch(provName, cats, onStep) {
+  const prov = provByName(provName); if (!prov) throw new Error("Provincia no válida");
+  const key = "s2-" + prov.name + "-" + [...cats].sort().join(",");
+  const hit = await Store.cacheGet(key, DAYMS); if (hit) return hit;
+  const sel = cats.map(c => `nwr(area.p)${CATS[c].q}["name"];`).join("");
+  onStep(`Descargando locales de ${prov.name} (en provincias grandes tarda hasta 1-2 minutos)`);
+  // Plan A: el área de la provincia por su código oficial (p. ej. ES-OR)
+  let j = await overpass(`[out:json][timeout:150];(${prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("")})->.p;(${sel});out center tags;`, 150, onStep);
+  // Plan B: por el nombre de la provincia
+  if (!(j.elements || []).length) {
+    onStep(`Probando por el nombre de la provincia`);
+    j = await overpass(`[out:json][timeout:150];area["ISO3166-1"="ES"]["admin_level"="2"]->.es;rel(area.es)["boundary"="administrative"]["admin_level"~"^(4|6)$"]["name"~"${prov.rx}",i];map_to_area->.p;(${sel});out center tags;`, 150, onStep);
+  }
+  const seen = new Set(), out = [];
+  for (const el of j.elements || []) {
+    if (!el.tags?.name) continue;
+    const id = el.type + "/" + el.id; if (seen.has(id)) continue; seen.add(id);
+    out.push(osmToResult(el, null, prov.name));
+  }
+  if (out.length) await Store.cacheSet(key, out);
+  return out;
+}
+// Asigna el municipio a cada local (en segundo plano, después de mostrar los resultados)
+async function assignMunicipalities(provName, list) {
+  const prov = provByName(provName); if (!prov || !list.length) return;
+  let shapes = await Store.cacheGet("munis2-" + prov.name, 60 * DAYMS);
+  if (!shapes) {
+    const j = await overpass(`[out:json][timeout:180];(${prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("")})->.p;rel(area.p)["boundary"="administrative"]["admin_level"="8"];out geom;`, 180);
+    shapes = [];
+    for (const r of j.elements || []) {
+      if (r.type !== "relation" || !r.tags?.name) continue;
+      const ip = r.tags["is_in:province"]; if (ip && norm(ip) !== norm(prov.name) && !norm(prov.rx).includes(norm(ip))) continue; // municipios de provincias vecinas
+      const segs = []; let a = 90, b = 180, c = -90, d = -180;
+      for (const m of r.members || []) {
+        if (m.type !== "way" || !m.geometry) continue;
+        for (let i = 1; i < m.geometry.length; i++) { const p = m.geometry[i - 1], q = m.geometry[i]; segs.push([+p.lat.toFixed(5), +p.lon.toFixed(5), +q.lat.toFixed(5), +q.lon.toFixed(5)]); a = Math.min(a, p.lat, q.lat); c = Math.max(c, p.lat, q.lat); b = Math.min(b, p.lon, q.lon); d = Math.max(d, p.lon, q.lon); }
+      }
+      if (segs.length) shapes.push({ name: r.tags.name, bbox: [a, b, c, d], segs });
+    }
+    if (shapes.length) await Store.cacheSet("munis2-" + prov.name, shapes);
+  }
+  for (const r of list) { const m = muniOf(r.lat, r.lon, shapes); if (m) r.municipality = m; }
+  S.search.munis[prov.name] = [...new Set(list.map(r => r.municipality).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+}
+
+/* ---------- Puntuación y duplicados ---------- */
+const rKey = r => r.osmId;
+function resultToCompany(r) {
+  const T = todayISO(); const c = { f: {}, ext: { osmId: r.osmId, osmUrl: r.osmUrl } };
+  for (const [k, v] of Object.entries({ name: r.name, address: r.address, municipality: r.municipality, province: r.province, phone: r.phone, email: r.email, web: r.web, social: r.social, sector: r.sector, hours: r.hours, services: r.services, brand: r.brand }))
+    if (v !== null && v !== undefined && v !== "") c.f[k] = { v, src: "api", origin: "OpenStreetMap", at: T };
+  return c;
+}
+function resultScore(r) {
+  if (r._rev === S.settings.svcRev) return r._sc;
+  const c = resultToCompany(r); c.id = r.osmId; c.updatedAt = "r"; c.crm = { tags: [] }; c.contacts = []; c.interactions = [];
+  const w = whyContact(c); r._sc = { score: w.sc.score, top: w.opps[0]?.what || null, why: w.summary, factors: w.sc.factors }; r._rev = S.settings.svcRev; return r._sc;
+}
+let DUPIDX = null;
+function buildDupIndex() {
+  const m = new Map(); const add = (k, c) => { if (k && !m.has(k)) m.set(k, c); };
+  for (const c of S.companies.values()) {
+    if (c.ext?.osmId) add("o:" + c.ext.osmId, c);
+    const ph = digits(val(c, "phone")); if (ph.length === 9) add("p:" + ph, c);
+    const d = domainOf(val(c, "web")); if (d && !/facebook|instagram|google|tripadvisor|thefork|eltenedor|linktr/.test(d)) add("w:" + d, c);
+    const n = norm(val(c, "name")); if (n) add("n:" + n + "|" + norm(val(c, "municipality")), c);
+  }
+  DUPIDX = m;
+}
+function dupOf(r) { const I = DUPIDX; if (!I) return null; const ph = digits(r.phone), d = domainOf(r.web); return I.get("o:" + r.osmId) || (ph.length === 9 && I.get("p:" + ph)) || (d && I.get("w:" + d)) || I.get("n:" + norm(r.name) + "|" + norm(r.municipality)) || null; }
+function visibleResults() {
+  const s = S.search, F = s.form; buildDupIndex();
+  let list = s.results.map(r => ({ r, dup: dupOf(r), sc: resultScore(r) }));
+  if (F.omun) { const m = norm(F.omun); list = list.filter(x => norm(x.r.municipality) === m); }
+  if (s.sectorF) list = list.filter(x => x.r.kind === s.sectorF);
+  if (s.q) { const q = norm(s.q); list = list.filter(({ r }) => norm([r.name, r.municipality, r.address, r.sector].join(" ")).includes(q)); }
+  if (F.needPhone) list = list.filter(x => x.r.phone || x.r.email);
+  if (F.needWeb) list = list.filter(x => x.r.web);
+  if (s.minScore) list = list.filter(x => (x.sc.score ?? 0) >= +s.minScore);
+  if (s.hideDup) list = list.filter(x => !x.dup);
+  const by = s.sortBy;
+  list.sort((a, b) => by === "name" ? (a.r.name || "").localeCompare(b.r.name || "", "es") : by === "muni" ? (a.r.municipality || "~").localeCompare(b.r.municipality || "~", "es") : (b.sc.score ?? -1) - (a.sc.score ?? -1));
+  return list;
+}
+
+/* ---------- Vista ---------- */
+VIEWS.buscar = () => {
+  const s = S.search, F = s.form, svc = S.settings.service;
+  const ml = s.munis[F.oprov];
+  const list = s.results.length ? visibleResults() : [];
+  const free = list.filter(x => !x.dup);
+  const selN = list.filter(x => s.sel.has(rKey(x.r)) && !x.dup).length;
+  const allSel = free.length && free.every(x => s.sel.has(rKey(x.r)));
+  const kinds = {}; s.results.forEach(r => kinds[r.kind] = (kinds[r.kind] || 0) + 1);
+  return `<div class="page-head"><div><h1>Buscar locales</h1><p>Bares, restaurantes y otros negocios de cualquier provincia, con su sector, contacto y encaje con ${esc(svc.name)}. Gratis.</p></div></div>
+    ${IN_FRAME ? `<div class="notice warn" style="margin-bottom:14px">${ico("info")}<div><b>Estás en una vista previa.</b> Aquí la búsqueda puede estar bloqueada. Para que funcione, abre la app desde su dirección web o descarga el archivo y ábrelo con tu navegador.</div></div>` : ""}
+    <section class="card">
+      <div class="field"><span class="lbl">Tipo de negocio</span><div class="row">${Object.entries(CATS).map(([k, c]) => `<button class="chip ${F.cats.includes(k) ? "on" : ""}" data-act="cat" data-k="${k}" aria-pressed="${F.cats.includes(k)}">${esc(c.label)}</button>`).join("")}</div></div>
+      <div class="grid-form" style="margin-top:14px">
+        <div class="field"><label for="sf-oprov">Provincia</label><select class="select" id="sf-oprov" data-sf="oprov"><option value="" ${!F.oprov ? "selected" : ""}>Elige una provincia…</option>${provinces().map(p => `<option ${F.oprov === p ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></div>
+        <div class="field"><label for="sf-omun">Municipio (opcional)</label>${Array.isArray(ml) ? `<select class="select" id="sf-omun" data-sf="omun"><option value="">Toda la provincia</option>${ml.map(m => `<option ${F.omun === m ? "selected" : ""}>${esc(m)}</option>`).join("")}</select>` : `<input class="input" id="sf-omun" disabled placeholder="${F.oprov ? "Disponible tras buscar" : "Elige antes la provincia"}">`}</div>
+      </div>
+      <div class="row" style="margin-top:14px">${s.running ? `<button class="btn danger" data-act="stop-search">${ico("x")}<span>Detener</span></button>` : `<button class="btn primary" data-act="run-search" ${F.oprov && F.cats.length ? "" : "disabled"}>${ico("search")}<span>Buscar locales</span></button>`}
+        ${s.results.length && !s.running ? `<button class="btn ghost" data-act="clear-results">Limpiar resultados</button>` : ""}
+        <button class="btn ghost" data-act="diagnose">Comprobar conexión</button></div>
+      ${s.running || s.label ? `<div class="progress" aria-hidden="true"><i style="width:${s.running ? Math.max(8, s.done) : 100}%"></i></div><div class="small muted" role="status">${esc(s.label)}</div>` : ""}
+      ${s.errors.length ? `<div class="notice warn" style="margin-top:10px">${ico("info")}<div><b>Ha habido un problema:</b><br>${s.errors.slice(0, 3).map(esc).join("<br>")}</div></div>` : ""}
+    </section>
+    ${s.results.length ? `
+    <div class="chips" style="margin-top:16px"><button class="chip ${!s.sectorF ? "on" : ""}" data-act="sector-f" data-k="">Todos los sectores <b>${nf.format(s.results.length)}</b></button>${Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<button class="chip ${s.sectorF === k ? "on" : ""}" data-act="sector-f" data-k="${esc(k)}">${esc(k)} <b>${nf.format(n)}</b></button>`).join("")}</div>
+    <div class="r-bar">
+      <label class="search-box grow">${ico("search")}<span class="sr">Filtrar</span><input class="input" id="rq" type="search" placeholder="Filtrar por nombre, calle, tipo de cocina…" value="${esc(s.q)}"></label>
+      <select class="select" data-act="r-sort" aria-label="Ordenar"><option value="score" ${s.sortBy === "score" ? "selected" : ""}>Mayor encaje primero</option><option value="name" ${s.sortBy === "name" ? "selected" : ""}>Nombre A-Z</option><option value="muni" ${s.sortBy === "muni" ? "selected" : ""}>Municipio</option></select>
+      <select class="select" data-act="r-min" aria-label="Encaje mínimo"><option value="">Cualquier encaje</option>${[50, 60, 70, 80].map(n => `<option value="${n}" ${String(s.minScore) === String(n) ? "selected" : ""}>Encaje ${n} o más</option>`).join("")}</select>
+    </div>
+    <div class="r-bar" style="margin-top:0">
+      <label class="chk-row"><input type="checkbox" class="chk" data-sf="needPhone" ${F.needPhone ? "checked" : ""}> Con teléfono o email</label>
+      <label class="chk-row"><input type="checkbox" class="chk" data-sf="needWeb" ${F.needWeb ? "checked" : ""}> Con web</label>
+      <label class="chk-row"><input type="checkbox" class="chk" data-act="r-hide" ${s.hideDup ? "checked" : ""}> Ocultar los que ya tengo</label>
+      <label class="chk-row"><input type="checkbox" class="chk" data-act="r-all" ${allSel ? "checked" : ""}> Seleccionar los ${nf.format(free.length)}</label>
+    </div>
+    <div class="r-bar" style="margin-top:0"><select class="select" data-act="r-status" aria-label="Estado al añadir"><option value="">Añadir sin estado comercial</option>${S.settings.statuses.filter(x => x.stage === 0).map(x => `<option value="${x.id}" ${s.assign === x.id ? "selected" : ""}>Añadir como "${esc(x.label)}"</option>`).join("")}</select>
+      <button class="btn primary" data-act="add-results" ${selN ? "" : "disabled"}>${ico("plus")}<span>Añadir ${selN ? nf.format(selN) : ""} a mi base</span></button>
+      <button class="btn" data-act="export-results">${ico("download")}<span>Exportar estos ${nf.format(list.length)} a Excel</span></button>
+      <span class="small muted">${nf.format(list.length)} mostrados · ${nf.format(list.length - free.length)} ya en tu base</span></div>
+    ${list.length ? `<div class="results">${list.slice(0, s.show).map(resultCard).join("")}</div>` : `<div class="card empty"><strong>Ningún local cumple estos filtros</strong>Quita algún filtro o elige otro sector o municipio.</div>`}
+    ${list.length > s.show ? `<div class="pager"><span class="muted small">Mostrando ${nf.format(s.show)} de ${nf.format(list.length)}</span><button class="btn" data-act="r-more">Mostrar más</button></div>` : ""}
+    <p class="small muted" style="margin-top:14px">Datos © colaboradores de <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL). El encaje es una puntuación orientativa con los datos públicos del local, no una probabilidad real de venta.</p>`
+    : !s.running && s.label && !s.errors.length ? `<div class="card empty" style="margin-top:14px"><strong>Sin resultados</strong>No hay locales de esos tipos en la provincia elegida. Prueba con más tipos de negocio.</div>` : ""}`;
+};
+function resultCard({ r, dup, sc }) {
+  const k = rKey(r), on = S.search.sel.has(k) && !dup, s = sc.score;
+  return `<article class="r-card ${on ? "sel" : ""} ${dup ? "dup" : ""}">
+    <div class="r-top"><input type="checkbox" class="chk" data-act="r-sel" data-k="${esc(k)}" ${on ? "checked" : ""} ${dup ? "disabled" : ""} aria-label="Seleccionar" style="margin-top:3px">
+      <div><strong>${esc(r.name)}</strong><span class="small muted">${esc([r.address, r.municipality].filter(Boolean).join(" · ")) || "Sin dirección publicada"}</span></div>
+      ${s !== null ? `<span class="score s-${scoreCls(s)}" title="Encaje con ${esc(S.settings.service.name)}" style="min-width:auto"><span class="score-bar" style="width:40px"><i class="bg-${scoreCls(s)}" style="width:${s}%"></i></span>${s}</span>` : ""}</div>
+    <div class="row" style="gap:6px"><span class="pill">${esc(r.sector)}</span>${r.brand ? `<span class="pill" style="background:var(--warm-soft);color:var(--warm)">Cadena: ${esc(r.brand)}</span>` : ""}${r.services ? `<span class="pill">${esc(r.services)}</span>` : ""}</div>
+    <div class="r-facts">${r.phone ? `<span>${ico("phone")}<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></span>` : `<span class="na">Sin teléfono publicado</span>`}${r.email ? `<span>${ico("mail")}<a href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : ""}${r.web ? `<span>${ico("globe")}<a href="${esc(urlOf(r.web))}" target="_blank" rel="noopener">${esc(domainOf(r.web))}</a></span>` : ""}${r.social ? `<span>Redes sociales</span>` : ""}</div>
+    ${sc.top ? `<div class="small" style="color:var(--ink-2)"><b style="color:var(--ink)">Oportunidad:</b> ${esc(sc.top)}.</div>` : ""}
+    <div class="row" style="justify-content:space-between">${dup ? `<button class="btn sm" data-open="${dup.id}">Ya en tu base: abrir</button>` : `<span class="small muted">${r.hours ? "Horario publicado" : ""}</span>`}<span class="row" style="gap:12px"><a class="small" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([r.name, r.address, r.municipality || r.province].filter(Boolean).join(", "))}" target="_blank" rel="noopener" title="Abre la búsqueda en Google Maps para ver teléfono, reseñas y fotos">Google Maps</a><a class="small" href="${esc(r.osmUrl)}" target="_blank" rel="noopener">Mapa</a></span></div>
+  </article>`;
+}
+
+/* ---------- Acciones ---------- */
+async function runOsm() {
+  const s = S.search, F = s.form; s.done = 10;
+  const step = t => { s.label = t + "…"; s.done = Math.min(90, s.done + 20); render(); };
+  try { s.results = await osmSearch(F.oprov, F.cats, step); }
+  catch (e) { if (!s.cancel) s.errors.push(e.message); return; }
+  if (!s.results.length) return;
+  s.running = false; s.label = `${nf.format(s.results.length)} locales encontrados en ${F.oprov}. Asignando municipios…`; render();
+  try { await assignMunicipalities(F.oprov, s.results); s.label = `${nf.format(s.results.length)} locales encontrados en ${F.oprov}.`; }
+  catch (e) { s.label = `${nf.format(s.results.length)} locales encontrados en ${F.oprov}. No se pudieron cargar los municipios; se muestra la ciudad de la dirección cuando existe.`; S.search.munis[F.oprov] = [...new Set(s.results.map(r => r.municipality).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es")); }
+  s.results.forEach(r => { r._rev = -1; });
+  render();
+}
+const SEARCH_ACTIONS = {
+  "cat": a => { const F = S.search.form, k = a.dataset.k; F.cats = F.cats.includes(k) ? F.cats.filter(x => x !== k) : [...F.cats, k]; render(); },
+  "sector-f": a => { S.search.sectorF = a.dataset.k; S.search.show = 120; render(); },
+  "run-search": async () => {
+    const s = S.search; if (s.running) return;
+    if (!s.form.cats.length) { toast("Elige al menos un tipo de negocio"); return; }
+    Object.assign(s, { running: true, cancel: false, errors: [], results: [], q: "", show: 120, sectorF: "" }); s.sel.clear();
+    try { await runOsm(); } finally {
+      s.running = false;
+      if (s.cancel) s.label = "Búsqueda detenida."; else if (!s.results.length) s.label = s.errors.length ? "" : "Búsqueda terminada.";
+      render();
+    }
+  },
+  "stop-search": () => { S.search.cancel = true; try { S._abort?.abort(); } catch (_) {} },
+  "clear-results": () => { Object.assign(S.search, { results: [], label: "", errors: [], q: "", show: 120, sectorF: "" }); S.search.sel.clear(); render(); },
+  "r-more": () => { S.search.show += 240; render(); },
+  "add-results": async () => {
+    const s = S.search; const toSave = []; let added = 0, merged = 0;
+    for (const r of s.results) {
+      if (!s.sel.has(rKey(r))) continue;
+      const inc = resultToCompany(r), dup = findDuplicate(inc);
+      if (dup) { if (mergeExternal(dup, inc)) { toSave.push(dup); merged++; } continue; }
+      const c = newCompany(); c.f = inc.f; c.ext = inc.ext;
+      S.companies.set(c.id, c);
+      if (s.assign) setStatus(c, s.assign); else toSave.push(c);
+      added++;
+    }
+    s.sel.clear(); await Store.saveMany(toSave);
+    toast(`${nf.format(added)} locales añadidos a tu base${merged ? `, ${merged} actualizados` : ""}`); render();
+  },
+  "export-results": () => {
+    const list = visibleResults().map(x => { const c = newCompany(); const inc = resultToCompany(x.r); c.f = inc.f; c.ext = inc.ext; c.id = "x" + x.r.osmId.replace(/\D/g, ""); return c; });
+    exportXLSX(list);
+  },
+  "diagnose": async () => {
+    const prov = provByName(S.search.form.oprov) || provByName("Madrid");
+    modal("Comprobar conexión", `<div id="diag"><div class="row"><div class="spinner" style="width:22px;height:22px"></div><span>Probando con la provincia de ${esc(prov.name)}…</span></div></div>`, `<button class="btn" data-act="clear-osm-cache">Vaciar caché</button><button class="btn primary" data-act="close-modal">Cerrar</button>`);
+    const steps = []; const show = () => { const d = $("#diag"); if (d) d.innerHTML = steps.map(x => `<div class="factor" style="margin-bottom:8px"><span class="fx ${x.ok === null ? "q" : x.ok ? "plus" : "minus"}">${x.ok === null ? "…" : x.ok ? "✓" : "✕"}</span><div><b>${esc(x.label)}</b><div class="small muted" style="overflow-wrap:anywhere">${esc(x.detail || "")}</div></div><span></span></div>`).join(""); };
+    const run = async (label, fn) => { const st = { label, ok: null }; steps.push(st); show(); try { st.detail = await fn(); st.ok = true; } catch (e) { st.ok = false; st.detail = e.message; } show(); return st.ok; };
+    if (!await run("Conexión con los servidores de mapas", async () => { await overpass("[out:json][timeout:20];node(1);out ids;", 20); return "Correcta"; })) return show();
+    await run(`Contar restaurantes en ${prov.name}`, async () => { const j = await overpass(`[out:json][timeout:90];(${prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("")})->.p;nwr(area.p)["amenity"="restaurant"]["name"];out count;`, 90); const n = +(j.elements?.[0]?.tags?.total || 0); if (!n) throw new Error("0 restaurantes: la provincia no se ha reconocido"); return `${nf.format(n)} restaurantes con nombre`; });
+    steps.push({ label: "Resultado", ok: steps.every(x => x.ok), detail: steps.every(x => x.ok) ? "Todo funciona. Ya puedes buscar." : "Hay un paso con error. Envíame una captura de esta ventana." }); show();
+  },
+  "clear-osm-cache": async () => { await Store.cacheClear(); S.search.munis = {}; toast("Caché vaciada"); }
+};
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.matches('[data-act="r-all"]')) { const s = S.search; visibleResults().filter(x => !x.dup).forEach(x => t.checked ? s.sel.add(rKey(x.r)) : s.sel.delete(rKey(x.r))); render(); }
+  if (t.matches('[data-act="r-sort"]')) { S.search.sortBy = t.value; render(); }
+  if (t.matches('[data-act="r-min"]')) { S.search.minScore = t.value; render(); }
+  if (t.matches('[data-sf="oprov"]')) { S.search.form.omun = ""; if (S.search.results.length && S.search.results[0].province !== t.value) { S.search.results = []; S.search.label = ""; } }
+});
+
+/* ---------- Actualizar una ficha ---------- */
+async function refreshFromApi(c) {
+  try {
+    if (c.ext?.osmId) {
+      toast("Actualizando desde OpenStreetMap…");
+      const j = await overpass(`[out:json][timeout:30];${c.ext.osmId.replace("/", "(")});out center tags;`, 30);
+      const el = j.elements?.[0]; if (!el) { toast("Este local ya no está en OpenStreetMap"); return; }
+      const r = osmToResult(el, val(c, "municipality"), val(c, "province"));
+      const ch = mergeExternal(c, resultToCompany(r)); Store.saveCompany(c);
+      toast(ch ? "Datos actualizados. Tu seguimiento no se ha tocado." : "Sin cambios en OpenStreetMap"); return render();
+    }
+    const prov = provByName(val(c, "province") || "");
+    if (!prov) { toast("Indica la provincia en Editar datos para buscar el local"); return; }
+    const name = String(val(c, "name") || "").replace(/\b(s\.?l\.?u?|s\.?a\.?|slp)\b\.?/gi, "").trim();
+    if (name.length < 3) { toast("El nombre es demasiado corto para buscarlo"); return; }
+    toast("Buscando el local en OpenStreetMap…");
+    const ids = await provinceAreas(prov);
+    const j = await overpass(`[out:json][timeout:60];${areaSet(ids)}(${Object.values(CATS).map(x => `nwr(area.p)${x.q}["name"~"${reEsc(name)}",i];`).join("")});out center tags 8;`, 60);
+    const cands = (j.elements || []).filter(e => e.tags?.name).map(e => osmToResult(e, null, prov.name)); S._cands = cands;
+    modal("Vincular con OpenStreetMap", cands.length ? `<p class="small muted" style="margin:0">Elige el local que corresponde a <b>${esc(val(c, "name"))}</b>.</p>${cands.map((r, i) => `<div class="cand"><div style="min-width:0"><b>${esc(r.name)}</b><div class="small muted">${esc([r.sector, r.address].filter(Boolean).join(" · "))}</div><div class="small">${[r.phone, r.web && domainOf(r.web)].filter(Boolean).map(esc).join(" · ")}</div></div><button class="btn sm" data-act="link-osm" data-i="${i}">Es este</button></div>`).join("")}`
+      : `<p style="margin:0">No hay ningún local con un nombre parecido en ${esc(prov.name)}.</p>`, `<button class="btn" data-act="close-modal">${cands.length ? "Ninguno coincide" : "Cerrar"}</button>`);
+  } catch (e) { toast(e.message); }
+}
+SEARCH_ACTIONS["link-osm"] = a => {
+  const c = S.companies.get(S.openId), r = S._cands?.[+a.dataset.i]; if (!c || !r) return;
+  const inc = resultToCompany(r); if (val(c, "name")) delete inc.f.name; if (val(c, "province")) delete inc.f.province;
+  mergeExternal(c, inc); Store.saveCompany(c); closeModal(); toast("Vinculado con OpenStreetMap"); render();
+};
+</script>
+<script>
+/* ============ Acciones ============ */
+function setStatus(c, id) {
+  const prev = statusById(c.crm.status), next = statusById(id), T = todayISO();
+  if ((prev?.id || "") === (id || "")) return;
+  c.crm.status = id || "";
+  if (next) {
+    c.crm.maxStage = Math.max(c.crm.maxStage ?? 0, next.stage);
+    if (next.trial) { c.crm.trialStart ||= T; c.crm.trialEnd ||= addDays(T, 14); }
+    if (next.stage === 5) c.crm.contractDate ||= T;
+    c.interactions.push({ id: uid("i"), date: T, type: "Estado", text: `${prev ? prev.label : "Sin prospectar"} → ${next.label}` });
+    if (next.id === "nuevo" || next.id === "por_contactar") { if (!c.crm.nextAction) c.crm.nextAction = "Primer contacto"; }
+  }
+  Store.saveCompany(c);
+}
+function applyFilterInput(el) {
+  const k = el.dataset.filter; let v = el.value;
+  if (k === "status1") { S.filters.status1 = v; S.filters.statuses = v ? [v] : []; }
+  else S.filters[k] = v;
+  S.page = 1; S.activeSearch = null;
+}
+function openCompany(id, tab = "resumen") { S.openId = id; S.tab = tab; renderDrawer(); document.body.style.overflow = "hidden"; }
+function closeDrawer() { S.openId = null; $("#layer").innerHTML = ""; document.body.style.overflow = ""; render(); }
+function selectedList() { return [...S.selected].map(id => S.companies.get(id)).filter(Boolean); }
+function confirmModal(title, text, act, danger = true) {
+  modal(title, `<p style="margin:0">${text}</p>`, `<button class="btn" data-act="close-modal">Cancelar</button><button class="btn ${danger ? "primary" : "primary"}" data-act="${act}" style="${danger ? "background:var(--hot);border-color:var(--hot);color:#fff" : ""}">Confirmar</button>`);
+}
+
+document.addEventListener("click", async e => {
+  const t = e.target;
+  const nav = t.closest("[data-nav]"); if (nav) { S.view = nav.dataset.nav; if (S.openId) { S.openId = null; $("#layer").innerHTML = ""; document.body.style.overflow = ""; } render(); window.scrollTo(0, 0); return; }
+  const tab = t.closest("[data-tab]"); if (tab) { S.tab = tab.dataset.tab; renderDrawer(); $(".d-body").scrollTop = 0; return; }
+  const srt = t.closest("[data-sort]"); if (srt) { const k = srt.dataset.sort; S.sort = { key: k, dir: S.sort.key === k && S.sort.dir === "desc" ? "asc" : (S.sort.key === k ? "desc" : (["name", "province", "municipality", "sector", "nextActionDate"].includes(k) ? "asc" : "desc")) }; render(); return; }
+  const kpi = t.closest("[data-kpi]"); if (kpi) { S.filters = JSON.parse(kpi.dataset.kpi); S.activeSearch = null; S.view = "empresas"; S.page = 1; render(); window.scrollTo(0, 0); return; }
+  const a = t.closest("[data-act]");
+  if (a && a.tagName !== "SELECT" && !(a.tagName === "INPUT" && a.type !== "button")) {
+    const act = a.dataset.act, id = a.dataset.id;
+    if (SEARCH_ACTIONS[act]) return SEARCH_ACTIONS[act](a, e); const c = S.companies.get(id || S.openId);
+    switch (act) {
+      case "close": return closeDrawer();
+      case "close-modal": return closeModal();
+      case "new-company": return companyForm(null);
+      case "edit-company": return companyForm(c);
+      case "import": return pickImport();
+      case "toggle-filters": S.showFilters = !S.showFilters; return render();
+      case "clear-filters": S.filters = {}; S.activeSearch = null; S.page = 1; return render();
+      case "more": S.page++; return render();
+      case "sort-dir": S.sort.dir = S.sort.dir === "asc" ? "desc" : "asc"; return render();
+      case "clear-sel": S.selected.clear(); return render();
+      case "export-sel-xlsx": return exportXLSX(selectedList());
+      case "export-sel-json": return exportJSON(selectedList());
+      case "export-all-xlsx": return exportXLSX([...S.companies.values()]);
+      case "export-all-json": return exportJSON([...S.companies.values()]);
+      case "mstage": S.mobileStage = id; return render();
+      case "load-search": { const s = S.settings.savedSearches.find(x => x.id === id); if (!s) return; S.filters = structuredClone(s.filters); S.activeSearch = s.id; S.view = "empresas"; S.page = 1; render(); window.scrollTo(0, 0); return; }
+      case "save-search": return modal("Guardar búsqueda", `<div class="field"><label for="ss-name">Nombre</label><input class="input" id="ss-name" placeholder="p. ej. Bares con terraza en Valencia"></div><p class="small muted" style="margin:0">${describeFilters(S.filters)}</p>`, `<button class="btn" data-act="close-modal">Cancelar</button><button class="btn primary" data-act="save-search-ok">Guardar</button>`);
+      case "save-search-ok": { const n = $("#ss-name").value.trim(); if (!n) { toast("Ponle un nombre a la búsqueda"); return; } const s = { id: uid("s"), name: n, filters: structuredClone(S.filters) }; S.settings.savedSearches.push(s); S.activeSearch = s.id; Store.saveSettings(); closeModal(); toast("Búsqueda guardada"); return render(); }
+      case "del-search": S.settings.savedSearches.splice(+a.dataset.i, 1); Store.saveSettings(); return render();
+      case "del-demo": return confirmModal("Borrar ejemplos", "Se eliminarán las empresas marcadas como ejemplo ficticio.", "del-demo-ok");
+      case "del-demo-ok": closeModal(); [...S.companies.values()].filter(x => x.demo).forEach(x => Store.deleteCompany(x.id)); toast("Ejemplos borrados"); return render();
+      case "del-all": return confirmModal("Borrar todas las empresas", `Se eliminarán ${S.companies.size} empresas con su historial. Exporta una copia antes si la necesitas.`, "del-all-ok");
+      case "del-all-ok": closeModal(); [...S.companies.keys()].forEach(k => Store.deleteCompany(k)); toast("Empresas borradas"); return render();
+      case "delete-company": return confirmModal("Eliminar empresa", `Se eliminará <b>${esc(val(c, "name"))}</b> con todo su historial.`, "delete-company-ok");
+      case "delete-company-ok": closeModal(); Store.deleteCompany(S.openId); toast("Empresa eliminada"); return closeDrawer();
+      case "refresh-api": return refreshFromApi(c);
+      case "done": return doneForm(c);
+      case "quick-date": $("#d-date").value = a.dataset.n ? addDays(todayISO(), +a.dataset.n) : ""; return;
+      case "save-done": {
+        const T = todayISO(), type = $("#d-type").value, text = $("#d-text").value.trim(), ns = $("#d-status").value;
+        c.interactions.push({ id: uid("i"), date: T, type, text: text || `${type} realizada` });
+        c.crm.lastContact = T; c.crm.firstContact ||= T; c.crm.result = text || c.crm.result || "";
+        const chMap = { Llamada: "Teléfono", Email: "Email", WhatsApp: "WhatsApp", Visita: "Visita presencial" }; if (chMap[type]) c.crm.channel = chMap[type];
+        c.crm.nextAction = $("#d-next").value.trim(); c.crm.nextActionDate = $("#d-date").value;
+        if (ns !== (c.crm.status || "")) setStatus(c, ns);
+        else { if (!c.crm.status) setStatus(c, "contactado"); else Store.saveCompany(c); }
+        if (stageOf(c) === 0) setStatus(c, "contactado");
+        closeModal(); toast(c.crm.nextActionDate ? `Guardado. Próximo seguimiento: ${fmtDate(c.crm.nextActionDate)}` : "Contacto registrado"); return render();
+      }
+      case "save-company": {
+        const name = $('[data-ff="name"]').value.trim(); if (!name) { toast("El nombre de la empresa es obligatorio"); $('[data-ff="name"]').focus(); return; }
+        const origin = $("#ff-origin").value.trim(); const target = c || newCompany();
+        const incoming = { f: {} };
+        for (const f of FIELDS) {
+          let v = $(`[data-ff="${f.k}"]`).value.trim(); const src = $(`[data-fs="${f.k}"]`).value;
+          if (v === "") { delete target.f[f.k]; continue; }
+          if (f.type === "number") { v = f.k === "rating" ? parseFloat(v.replace(",", ".")) : parseInt(v, 10); if (isNaN(v)) { delete target.f[f.k]; continue; } }
+          if (f.type === "bool") v = v === "true";
+          const cur = target.f[f.k];
+          if (!cur || cur.v !== v || cur.src !== src) incoming.f[f.k] = { v, src, origin: origin || (cur && cur.v === v ? cur.origin : (c ? "Edición manual" : "Alta manual")), at: todayISO() };
+        }
+        if (!c) { const dup = findDuplicate({ f: incoming.f }); if (dup) { closeModal(); toast(`Ya existe: ${val(dup, "name")}. Se han completado sus datos.`); mergeExternal(dup, incoming); Store.saveCompany(dup); return openCompany(dup.id, "datos"); } }
+        mergeExternal(target, incoming); Store.saveCompany(target); closeModal(); toast(c ? "Datos actualizados" : "Empresa añadida");
+        if (!c) { render(); return openCompany(target.id, "resumen"); }
+        return render();
+      }
+      case "toggle-tag": { const tg = a.dataset.tag; c.crm.tags = c.crm.tags || []; c.crm.tags = c.crm.tags.includes(tg) ? c.crm.tags.filter(x => x !== tg) : [...c.crm.tags, tg]; Store.saveCompany(c); return renderDrawer(); }
+      case "add-interaction": { const text = $("#in-text").value.trim(); if (!text) { toast("Describe la interacción"); return; } const date = $("#in-date").value || todayISO(), type = $("#in-type").value; c.interactions.push({ id: uid("i"), date, type, text }); if (!c.crm.lastContact || date > c.crm.lastContact) c.crm.lastContact = date; if (!c.crm.firstContact || date < c.crm.firstContact) c.crm.firstContact = date; Store.saveCompany(c); toast("Añadido al historial"); return render(); }
+      case "del-interaction": c.interactions = c.interactions.filter(i => i.id !== a.dataset.iid); Store.saveCompany(c); return renderDrawer();
+      case "add-contact": { const name = $("#k-name").value.trim(); if (!name) { toast("Indica el nombre del contacto"); return; } c.contacts.push({ id: uid("p"), name, role: $("#k-role").value.trim(), phone: $("#k-phone").value.trim(), email: $("#k-email").value.trim() }); c.crm.contactPerson ||= name; Store.saveCompany(c); return renderDrawer(); }
+      case "del-contact": c.contacts = c.contacts.filter(k => k.id !== a.dataset.kid); Store.saveCompany(c); return renderDrawer();
+      case "add-mod": { const v = $("#new-mod").value.trim(); if (!v) return; S.settings.service.modules.push(v); S.settings.svcRev++; Store.saveSettings(); return render(); }
+      case "del-mod": S.settings.service.modules.splice(+a.dataset.i, 1); S.settings.svcRev++; Store.saveSettings(); return render();
+      case "add-tag": { const v = $("#new-tag").value.trim(); if (!v) return; S.settings.tags.push({ id: uid("t"), label: v, color: "#2350F5" }); Store.saveSettings(); return render(); }
+      case "del-tag": { const tg = S.settings.tags.splice(+a.dataset.i, 1)[0]; const ch = [...S.companies.values()].filter(x => (x.crm.tags || []).includes(tg.id)); ch.forEach(x => { x.crm.tags = x.crm.tags.filter(y => y !== tg.id); Store.saveCompany(x); }); Store.saveSettings(); return render(); }
+      case "add-status": S.settings.statuses.push({ id: uid("st"), label: "Nuevo estado", color: "#64748B", stage: 1 }); Store.saveSettings(); return render();
+      case "del-status": { const s = S.settings.statuses[+a.dataset.i]; const used = [...S.companies.values()].filter(x => x.crm.status === s.id).length; if (used) { toast(`No se puede eliminar: ${used} empresas usan "${s.label}"`); return; } S.settings.statuses.splice(+a.dataset.i, 1); Store.saveSettings(); return render(); }
+    }
+    return;
+  }
+  if (t.closest("[data-stop], a, input, select, textarea, label")) return;
+  const op = t.closest("[data-open]"); if (op) { e.preventDefault(); openCompany(op.dataset.open); }
+});
+
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.matches('[data-act="status"]')) { const c = S.companies.get(t.dataset.id); if (c) { setStatus(c, t.value); toast(t.value ? `Estado: ${statusById(t.value).label}` : "Quitado del CRM"); render(); } return; }
+  if (t.matches('[data-act="sel"]')) { t.checked ? S.selected.add(t.dataset.id) : S.selected.delete(t.dataset.id); return render(); }
+  if (t.matches('[data-act="sel-all"]')) { const rows = filtered().slice(0, S.page * PER_PAGE); rows.forEach(c => t.checked ? S.selected.add(c.id) : S.selected.delete(c.id)); return render(); }
+  if (t.matches('[data-act="sort-mobile"]')) { S.sort.key = t.value; return render(); }
+  if (t.matches('[data-act="bulk-status"]') && t.value) { const L = selectedList(); L.forEach(c => setStatus(c, t.value)); toast(`${L.length} empresas actualizadas`); return render(); }
+  if (t.matches('[data-act="bulk-tag"]') && t.value) { const L = selectedList(); L.forEach(c => { c.crm.tags = [...new Set([...(c.crm.tags || []), t.value])]; Store.saveCompany(c); }); toast(`Etiqueta añadida a ${L.length} empresas`); return render(); }
+  if (t.matches("[data-sf]")) { S.search.form[t.dataset.sf] = t.type === "checkbox" ? t.checked : t.value; if (["oprov", "omun", "needPhone", "needWeb"].includes(t.dataset.sf)) render(); return; }
+  if (t.matches('[data-act="r-sel"]')) { const k = t.dataset.k; t.checked ? S.search.sel.add(k) : S.search.sel.delete(k); return render(); }
+  if (t.matches('[data-act="r-status"]')) { S.search.assign = t.value; return; }
+  if (t.matches('[data-act="r-hide"]')) { S.search.hideDup = t.checked; return render(); }
+  if (t.matches("[data-filter]") && t.id !== "q") { applyFilterInput(t); return render(); }
+  if (t.matches("[data-crm]")) { const c = S.companies.get(S.openId); if (!c) return; const k = t.dataset.crm; let v = t.value; if (k === "amount") v = v === "" ? "" : Math.max(0, +v); if (c.crm[k] === v) return; c.crm[k] = v; Store.saveCompany(c); toast("Guardado"); return; }
+  if (t.matches("[data-svc]")) { const k = t.dataset.svc; const svc = S.settings.service; svc[k] = ["targetCnae", "targetKeywords"].includes(k) ? t.value.split(",").map(x => x.trim()).filter(Boolean) : t.value.trim(); S.settings.svcRev++; Store.saveSettings(); toast("Servicio actualizado: el análisis se ha recalculado"); return; }
+  if (t.matches("[data-st]")) { const s = S.settings.statuses[+t.dataset.i]; const k = t.dataset.st; s[k] = k === "stage" ? +t.value : t.value; if (k === "label" && !s.label.trim()) s.label = "Sin nombre"; Store.saveSettings(); return; }
+  if (t.matches("[data-tg]")) { const g = S.settings.tags[+t.dataset.i]; g[t.dataset.tg] = t.value || g[t.dataset.tg]; Store.saveSettings(); return; }
+});
+let qTimer;
+document.addEventListener("input", e => {
+  if (e.target.id === "rq") { clearTimeout(qTimer); const el = e.target; qTimer = setTimeout(() => { S.search.q = el.value; const pos = el.selectionStart; render(); const n = $("#rq"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } }, 200); return; }
+  if (e.target.id === "q") { clearTimeout(qTimer); const el = e.target; qTimer = setTimeout(() => { applyFilterInput(el); const pos = el.selectionStart; render(); const n = $("#q"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } }, 220); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { if ($("#modal")) closeModal(); else if (S.openId) closeDrawer(); }
+  if (e.key === "Enter" && e.target.matches("input[data-sf]") && e.target.type !== "checkbox") { S.search.form[e.target.dataset.sf] = e.target.value; $('[data-act="run-search"]')?.click(); }
+  if (e.key === "Enter" && e.target.id === "new-mod") $('[data-act="add-mod"]')?.click();
+  if (e.key === "Enter" && e.target.id === "new-tag") $('[data-act="add-tag"]')?.click();
+  if (e.key === "Enter" && e.target.id === "ss-name") $('[data-act="save-search-ok"]')?.click();
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches(".t-name, .m-title, .k-card")) { e.preventDefault(); e.target.click(); }
+});
+
+/* ============ Arranque ============ */
+(async function boot() {
+  const { settings, comps } = await Store.init();
+  let fresh = false;
+  S.settings = settings || { service: structuredClone(DEFAULT_SERVICE), statuses: structuredClone(DEFAULT_STATUSES), tags: DEFAULT_TAGS, savedSearches: defaultSavedSearches(), svcRev: 0 };
+  if (!settings) fresh = true;
+  S.settings.svcRev = S.settings.svcRev || 0;
+  S.settings.savedSearches ||= []; S.settings.tags ||= []; S.settings.statuses ||= structuredClone(DEFAULT_STATUSES);
+  comps.forEach(c => { c.crm ||= { tags: [] }; c.crm.tags ||= []; c.contacts ||= []; c.interactions ||= []; c.f ||= {}; S.companies.set(c.id, c); });
+  if (fresh) Store.saveSettings();
+  initSearch();
+  if (!comps.length) S.view = "buscar";
+  render();
+})();
+</script>
+</body>
+</html>
