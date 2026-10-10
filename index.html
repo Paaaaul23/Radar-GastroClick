@@ -357,6 +357,12 @@ table.data{width:100%;border-collapse:separate;border-spacing:0;min-width:1680px
 .mail-preview:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .mail-preview p{margin:0 0 12px}.mail-preview ul{margin:0 0 12px;padding-left:20px}.mail-preview li{margin:0 0 4px}.mail-preview a{color:var(--accent)}
 .mail-sig summary{cursor:pointer}
+.only-bar{display:flex;flex-direction:column;gap:6px;margin:4px 0 12px}
+.only-bar .chips{flex-wrap:wrap!important;overflow:visible!important;padding:0!important}
+.chip.on .ico{width:14px;height:14px}.chip b{font-weight:700;opacity:.75}
+.enr-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:var(--surface)}
+.enr-bar .btn{white-space:normal;text-align:left}
+.enr-ok{color:var(--good);display:flex;gap:4px;align-items:center;overflow-wrap:anywhere}.enr-ok .ico{width:14px;height:14px;flex:none}
 .tpl-head{align-items:flex-start;flex-wrap:wrap;gap:12px}
 .tpl-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr));gap:12px;margin-top:14px}
 .tpl-card{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;background:var(--surface)}
@@ -816,6 +822,11 @@ async function importCompanies(list, label) {
 </script>
 <script>
 /* ============ Filtros y orden ============ */
+const HAS_FILTERS = [
+  ["email", "Con email", c => !!(val(c, "email") || c.contacts?.some(k => k.email))], ["phone", "Con teléfono", c => !!(val(c, "phone") || c.contacts?.some(k => k.phone))],
+  ["web", "Con web", c => !!val(c, "web")], ["social", "Con redes sociales", c => !!(val(c, "instagram") || val(c, "social"))],
+  ["none", "Sin email ni teléfono", c => !(val(c, "email") || val(c, "phone") || c.contacts?.some(k => k.email || k.phone))]
+];
 const resolveDate = v => { if (!v) return ""; const m = String(v).match(/^@(-?\d+)$/); return m ? addDays(todayISO(), +m[1]) : v; };
 function matches(c, F) {
   const T = todayISO();
@@ -836,6 +847,7 @@ function matches(c, F) {
   if (F.size && sizeOf(c) !== F.size) return false;
   if (F.ratingMin && (val(c, "rating") === null || +val(c, "rating") < +F.ratingMin)) return false;
   if (F.reviewsMin && (val(c, "reviews") === null || +val(c, "reviews") < +F.reviewsMin)) return false;
+  if (F.has && F.has.length) for (const h of F.has) if (!(HAS_FILTERS.find(x => x[0] === h)?.[2] || (() => true))(c)) return false;
   if (F.web === "yes" && !val(c, "web")) return false;
   if (F.web === "no" && val(c, "web")) return false;
   const ob = val(c, "onlineBooking");
@@ -1198,6 +1210,7 @@ VIEWS.empresas = () => {
       <button class="btn" data-act="toggle-filters" aria-expanded="${S.showFilters}">${ico("filter")}<span>Filtros${fc ? ` (${fc})` : ""}</span></button>
       ${fc || F.q ? `<button class="btn ghost" data-act="clear-filters">Limpiar</button><button class="btn ghost" data-act="save-search">${ico("save")}<span>Guardar búsqueda</span></button>` : ""}
     </div>
+    <div class="only-bar" style="margin:0 0 12px"><span class="lbl">Mostrar solo</span><div class="chips" style="margin:0">${HAS_FILTERS.map(([k, l, fn]) => { const on = (F.has || []).includes(k); return `<button class="chip ${on ? "on" : ""}" data-act="f-has" data-k="${k}" aria-pressed="${on}">${on ? ico("check") : ""}${l} <b>${nf.format([...S.companies.values()].filter(fn).length)}</b></button>`; }).join("")}</div></div>
     ${S.showFilters ? `<div class="card" style="margin-bottom:14px"><div class="filters">
       <div class="field"><label>Provincia</label>${sel("province", [["", "Todas"], ...provinces.map(p => [p, p])])}</div>
       <div class="field"><label>Municipio</label>${inp("municipality", "Cualquiera")}</div>
@@ -1308,6 +1321,7 @@ function describeFilters(F) {
   const out = [];
   for (const [k, v] of Object.entries(F || {})) {
     if (k === "status1" || v === "" || v === undefined || (Array.isArray(v) && !v.length)) continue;
+    if (k === "has") { out.push(v.map(h => HAS_FILTERS.find(x => x[0] === h)?.[1]).filter(Boolean).join(" · ")); continue; }
     if (k === "statuses") { out.push("Estado: " + v.map(id => statusById(id)?.label).filter(Boolean).join(", ")); continue; }
     let t = v; if (k === "tag") t = tagById(v)?.label; if (/^@-?\d+$/.test(v)) t = `hace ${-v.slice(1)} días`; if (k === "prospect") t = v === "yes" ? "sí" : "no"; if (k === "web" || k === "booking") t = v === "yes" ? "sí" : "no";
     out.push(`${L[k] || k}: ${esc(t)}`);
@@ -1357,7 +1371,7 @@ TABS.resumen = c => {
 TABS.datos = c => {
   const row = (label, k, html) => `<div>${label}</div><div class="val">${html ?? (val(c, k) !== null ? cellVal(c, k) : NA)} ${srcBadge(c, k)}</div>`;
   const ob = val(c, "onlineBooking"), y = ageYears(c);
-  return `<section class="card"><div class="card-head"><h3>Información empresarial</h3><div class="row"><button class="btn sm" data-act="refresh-api">${ico("refresh")}<span>Actualizar desde fuentes</span></button><button class="btn sm" data-act="edit-company">${ico("edit")}<span>Editar datos</span></button></div></div>
+  return `<section class="card"><div class="card-head"><h3>Información empresarial</h3><div class="row"><button class="btn sm primary" data-act="web-enrich">${ico("globe")}<span>Buscar email y redes en internet</span></button><button class="btn sm" data-act="refresh-api">${ico("refresh")}<span>Actualizar desde fuentes</span></button><button class="btn sm" data-act="edit-company">${ico("edit")}<span>Editar datos</span></button></div></div>
     <div class="kv">
       ${row("Empresa", "name")}${row("CIF/NIF", "cif")}${row("Sector", "sector")}${row("CNAE", "cnae")}${val(c, "activity") ? row("Objeto social", "activity") : ""}${val(c, "capital") ? row("Capital social", "capital") : ""}
       ${row("Fecha de constitución", "foundedAt")}
@@ -1735,6 +1749,128 @@ function igForm(c) {
 }
 </script>
 <script>
+/* ============ CONTACTOS EN INTERNET: web del local, aviso legal, buscador ============ */
+// Las webs no dejan leerse desde otra página (CORS), así que se leen a través de lectores públicos gratuitos.
+// Si uno falla se prueba el siguiente y se recuerda el último que funcionó.
+const PROXIES = [
+  u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
+  u => "https://corsproxy.io/?url=" + encodeURIComponent(u),
+  u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u),
+  u => "https://r.jina.ai/" + u
+];
+const NOT_A_SITE = /(^|\.)(tripadvisor\.|thefork\.|eltenedor\.|yelp\.|google\.|goo\.gl|facebook\.|fb\.|instagram\.|tiktok\.|twitter\.|x\.com|youtube\.|wikipedia\.|restaurantguru\.|paginasamarillas\.|just-eat\.|justeat\.|glovoapp\.|glovo\.|ubereats\.|deliveroo\.|booking\.|airbnb\.|foursquare\.|cylex|infoisinfo|guiarepsol\.|michelin\.|11870\.|einforma\.|axesor\.|empresite\.|infocif\.|linkedin\.|mapcarta\.|waze\.|apple\.com|duckduckgo\.|bing\.|openstreetmap\.|sluurpy\.|wanderlog\.|tripadvisor|linktr\.ee|cartadigital|qr\.|whatsapp\.)/i;
+const NAME_STOP = new Set("restaurante restaurant cafeteria cafe taberna hotel pizzeria meson pulperia cerveceria asador parrilla bodega grill burger tapas bar pub casa churreria heladeria panaderia pasteleria hostal hamburgueseria marisqueria braseria vinoteca gastrobar cocina".split(" "));
+const nameTokens = n => norm(n).split(" ").filter(w => w.length >= 4 && !NAME_STOP.has(w));
+async function fetchPage(url, timeoutMs = 12000) {
+  const key = "pg-" + url, hit = await Store.cacheGet(key, 7 * DAYMS); if (hit) return hit;
+  const order = [...PROXIES.keys()].sort((a, b) => (b === S._pxGood) - (a === S._pxGood));
+  for (const i of order) {
+    if (S.enr?.cancel) return null;
+    const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(PROXIES[i](url), { signal: ctrl.signal });
+      if (!r.ok) continue;
+      const txt = (await r.text()).slice(0, 600000);
+      if (txt.length < 80) continue;
+      S._pxGood = i; S._pxFails = 0; await Store.cacheSet(key, txt); return txt;
+    } catch (_) { /* siguiente lector */ } finally { clearTimeout(t); }
+  }
+  S._pxFails = (S._pxFails || 0) + 1; // varias seguidas sin respuesta: los lectores no están disponibles
+  return null;
+}
+function extractContacts(raw, base) {
+  const host = domainOf(base);
+  const txt = String(raw).replace(/&#0*64;|&#x0*40;|%40/gi, "@").replace(/&#0*46;|&#x0*2e;/gi, ".").replace(/&amp;/g, "&")
+    .replace(/\s*[\[(]\s*(at|arroba)\s*[\])]\s*/gi, "@").replace(/\s*[\[(]\s*(dot|punto)\s*[\])]\s*/gi, ".");
+  const emails = [...new Set([...txt.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9-]+(?:\.[A-Z0-9-]+)*\.[A-Z]{2,10}/gi)].map(m => m[0].toLowerCase().replace(/^[._-]+|[._-]+$/g, "")))]
+    .filter(e => !/\.(png|jpe?g|gif|svg|webp|css|js|ico|woff2?)$/.test(e) && !/(example|sentry|wixpress|wix\.com|domain\.|dominio\.|email\.com|correo\.com|tuemail|tucorreo|yourmail|youremail|^usuario@|^nombre@|^name@|^test@|^info@info|u00|godaddy|@2x|cloudflare|schema\.org|jquery|bootstrap|@sentry|noreply|no-reply|webmaster@(?!.*\.es$))/.test(e))
+    .sort((a, b) => (host && b.endsWith("@" + host)) - (host && a.endsWith("@" + host)) || (/@(gmail|hotmail|outlook|yahoo|icloud|live)\./.test(b)) - (/@(gmail|hotmail|outlook|yahoo|icloud|live)\./.test(a)));
+  const phones = [];
+  const addPh = s => { let d = String(s).replace(/\D/g, ""); if (d.startsWith("0034")) d = d.slice(4); else if (d.length === 11 && d.startsWith("34")) d = d.slice(2); if (/^[6789]\d{8}$/.test(d) && !phones.includes(d)) phones.push(d); };
+  for (const m of txt.matchAll(/tel:([+\d\s().%-]{9,24})/gi)) addPh(decodeURIComponent(m[1]));
+  for (const m of txt.matchAll(/(?:\+34|0034)[\s.-]?[6789](?:[\s.-]?\d){8}/g)) addPh(m[0]);
+  for (const m of txt.matchAll(/(?<![\d/.,€-])[6789]\d{2}(?:[\s.]\d{2,3}){2,3}(?![\d€])|(?<![\d/.,€-])[6789]\d{8}(?![\d€])/g)) addPh(m[0]);
+  const pick = re => { const n = {}; for (const m of txt.matchAll(re)) { const v = m[1]; n[v] = (n[v] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1]).map(x => x[0]); };
+  const instagram = pick(/instagram\.com\/([A-Za-z0-9._]{2,30})/gi).map(igHandle).find(Boolean) || null;
+  const facebook = pick(/facebook\.com\/((?!sharer|share|plugins|dialog|tr\b|login|profile\.php)[A-Za-z0-9.\-]{3,60})/gi)[0] || null;
+  const tiktok = pick(/tiktok\.com\/@([A-Za-z0-9._]{2,30})/gi)[0] || null;
+  const cifM = txt.match(/\b(?:C\.?\s?I\.?\s?F\.?|N\.?\s?I\.?\s?F\.?)\s*[:.]?\s*([A-HJNP-SUVW][-\s]?\d{7}[0-9A-J]|\d{8}[A-Z])\b/i);
+  const links = [];
+  for (const m of txt.matchAll(/href=["']([^"'#\s]+)["']|\]\((https?:[^)\s]+)\)/gi)) {
+    try { const u = new URL(m[1] || m[2], base); if (domainOf(u.href) === host && /contact|contacto|aviso|legal|privacidad|quienes|nosotros|about|reserv/i.test(u.pathname) && !links.includes(u.href)) links.push(u.href); } catch (_) {}
+  }
+  links.sort((a, b) => /contact|aviso|legal/i.test(b) - /contact|aviso|legal/i.test(a));
+  return { emails, phones, instagram, facebook, tiktok, cif: cifM ? cifM[1].replace(/[-\s]/g, "").toUpperCase() : null, links };
+}
+// Busca la web (y redes) de un local sin web en OpenStreetMap: DuckDuckGo y, si no responde, Bing.
+async function findWebsite(info) {
+  const q = `"${info.name}" ${info.municipality || info.province || ""}`.trim(), toks = nameTokens(info.name);
+  const urls = [];
+  const ddg = await fetchPage("https://html.duckduckgo.com/html/?q=" + encodeURIComponent(q));
+  if (ddg) for (const m of ddg.matchAll(/uddg=([^&"')\s]+)/g)) { try { urls.push(decodeURIComponent(m[1])); } catch (_) {} }
+  if (!urls.length) { const bing = await fetchPage("https://www.bing.com/search?setlang=es&q=" + encodeURIComponent(q)); if (bing) for (const m of bing.matchAll(/<h2[^>]*><a[^>]+href="(https?:\/\/[^"]+)"/g)) urls.push(m[1].replace(/&amp;/g, "&")); }
+  const out = { web: null, instagram: null, facebook: null };
+  const like = s => toks.length ? toks.some(t => norm(s).replace(/ /g, "").includes(t)) : false;
+  for (const u of urls.slice(0, 10)) {
+    const ig = (u.match(/instagram\.com\/([A-Za-z0-9._]+)/i) || [])[1]; if (ig && !out.instagram && like(ig)) out.instagram = igHandle(ig);
+    const fb = (u.match(/facebook\.com\/([A-Za-z0-9.\-]+)/i) || [])[1]; if (fb && !out.facebook && like(fb)) out.facebook = fb;
+  }
+  const cands = [...new Set(urls.filter(u => /^https?:/i.test(u) && !NOT_A_SITE.test(domainOf(u))).map(u => new URL(u).origin))].slice(0, 3);
+  for (const c of cands) {
+    if (like(domainOf(c).split(".")[0])) { out.web = c; break; }
+    const page = await fetchPage(c); // sin coincidencia en el dominio: se comprueba que la web hable de ese local
+    if (page && toks.length && toks.every(t => norm(page).includes(t)) && (!info.municipality || norm(page).includes(norm(info.municipality)))) { out.web = c; break; }
+  }
+  return out;
+}
+// Lee la web del local (y su página de contacto o aviso legal) y devuelve lo encontrado
+async function enrichCore(info) {
+  const f = { emails: [], phones: [], instagram: null, facebook: null, tiktok: null, cif: null, web: null, foundWeb: false };
+  let web = info.web && !NOT_A_SITE.test(domainOf(info.web)) ? urlOf(info.web) : null;
+  if (!web) { const s = await findWebsite(info); Object.assign(f, { instagram: s.instagram, facebook: s.facebook }); if (s.web) { web = s.web; f.web = s.web; f.foundWeb = true; } }
+  if (!web) return f;
+  const merge = x => { x.emails.forEach(e => f.emails.includes(e) || f.emails.push(e)); x.phones.forEach(p => f.phones.includes(p) || f.phones.push(p)); f.instagram ||= x.instagram; f.facebook ||= x.facebook; f.tiktok ||= x.tiktok; f.cif ||= x.cif; };
+  const home = await fetchPage(web); if (!home) return f;
+  const h = extractContacts(home, web); merge(h);
+  for (const link of h.links.slice(0, 2)) { if (f.emails.length && f.cif) break; const pg = await fetchPage(link); if (pg) merge(extractContacts(pg, web)); }
+  return f;
+}
+const fmtPhone = d => d && d.length === 9 ? `${d.slice(0, 3)} ${d.slice(3, 5)} ${d.slice(5, 7)} ${d.slice(7)}` : d;
+// Vuelca lo encontrado en un resultado de búsqueda sin pisar lo que ya tenía
+function applyFound(r, f) {
+  const set = (k, v, origin, src = "api") => { if (v && !r[k]) { r[k] = v; (r.org ||= {})[k] = origin; (r.srcs ||= {})[k] = src; return 1; } return 0; };
+  const o = f.foundWeb ? "Búsqueda en internet" : "Web del local";
+  let n = set("web", f.web, "Búsqueda en internet", "estimated") + set("email", f.emails[0], o) + set("phone", fmtPhone(f.phones[0]), o) + set("instagram", f.instagram, o, f.foundWeb || !r.web ? "estimated" : "api") + set("cif", f.cif, o);
+  const soc = [f.facebook && "https://facebook.com/" + f.facebook, f.tiktok && "https://tiktok.com/@" + f.tiktok].filter(x => x && !(r.social || "").includes(x));
+  if (soc.length) { r.social = [r.social, ...soc].filter(Boolean).join(", "); n++; }
+  r.enrich = { at: Date.now(), n, emails: f.emails.slice(0, 5) };
+  return n;
+}
+async function enrichResult(r) { if (r.enrich) return r.enrich.n; return applyFound(r, await enrichCore({ name: r.name, web: r.web, municipality: r.municipality, province: r.province })); }
+async function enrichCompany(c) {
+  toast("Buscando email, teléfono y redes en internet…");
+  const r = { name: val(c, "name"), web: val(c, "web"), municipality: val(c, "municipality"), province: val(c, "province"), email: val(c, "email"), phone: val(c, "phone"), instagram: val(c, "instagram"), cif: val(c, "cif"), social: val(c, "social") };
+  const f = await enrichCore(r); applyFound(r, f);
+  const got = [];
+  for (const k of ["web", "email", "phone", "instagram", "cif", "social"]) if (r.org?.[k] || (k === "social" && r.social !== val(c, "social") && r.social)) {
+    if (val(c, k) && k !== "social") continue;
+    c.f[k] = { v: r[k], src: r.srcs?.[k] || "api", origin: r.org?.[k] || "Web del local", at: todayISO() }; got.push(FIELD_BY[k].label.toLowerCase());
+  }
+  if (got.length) { Store.saveCompany(c); toast("Encontrado: " + got.join(", ")); } else toast(f.emails.length || f.phones.length ? "Lo encontrado ya estaba en la ficha" : "No se ha encontrado nada nuevo en internet");
+  if (S.openId === c.id) renderDrawer(); else render();
+}
+// Busca contactos de varios resultados a la vez (4 en paralelo), se puede detener
+async function enrichMany(list) {
+  const todo = list.filter(r => !r.enrich); if (!todo.length) { toast("Ya se han buscado todos los que ves"); return; }
+  S.enr = { running: true, cancel: false, done: 0, total: todo.length, found: 0 }; render();
+  let i = 0, last = 0;
+  S._pxFails = 0;
+  const worker = async () => { while (i < todo.length && !S.enr.cancel) { if ((S._pxFails || 0) >= 8) { S.enr.cancel = true; S.enr.down = true; break; } const r = todo[i++]; try { if (await enrichResult(r)) S.enr.found++; } catch (_) {} S.enr.done++; r._rev = -1; if (Date.now() - last > 700) { last = Date.now(); render(); } } };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  const { done, found, cancel, down } = S.enr; S.enr = { running: false, msg: down ? "Los lectores de webs gratuitos no responden ahora mismo. Inténtalo dentro de un rato." : `${cancel ? "Detenido. " : ""}Revisados ${nf.format(done)} locales: ${nf.format(found)} con datos nuevos.` }; render();
+}
+</script>
+<script>
 /* ============ BUSCAR: OpenStreetMap directamente desde el navegador (gratis, sin clave) ============ */
 const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://overpass.osm.jp/api/interpreter"];
 const PROVS = [
@@ -1774,37 +1910,41 @@ function initSearch() {
 /* ---------- Overpass ---------- */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function overpass(query, timeoutS = 120, onWait) {
-  // Recorre todos los servidores: si uno está ocupado pasa enseguida al siguiente, y solo
-  // cuando todos lo están espera unos segundos (con cuenta atrás) y vuelve a intentarlo.
+  // Pregunta a dos servidores a la vez y se queda con el primero que responde (el otro se cancela).
+  // Si los dos están ocupados pasa a los dos siguientes; si todos lo están, espera con cuenta atrás y repite.
   const say = m => onWait && onWait(m, true);
   const stop = () => { if (S.search?.cancel) throw new Error("Búsqueda detenida"); };
   const eps = [...OVERPASS].sort((a, b) => (b === S._ovGood) - (a === S._ovGood));
+  const tryOne = async (ep, ctrl) => {
+    const host = new URL(ep).host, fail = (msg, extra = {}) => Object.assign(new Error(`${host}: ${msg}`), extra);
+    let r, txt;
+    try { r = await fetch(ep, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" }, body: "data=" + encodeURIComponent(query), signal: ctrl.signal }); txt = await r.text(); }
+    catch (e) { throw e.name === "AbortError" ? fail("tiempo agotado", { retry: true }) : fail("sin conexión", { net: true, retry: true }); } // saturado sin CORS se ve como "sin conexión"
+    if (r.status === 429 || r.status === 503 || r.status === 504) throw fail(r.status === 429 ? "pide esperar" : "saturado", { retry: true });
+    if (r.status === 400) { console.error(query, txt); throw fail("consulta rechazada", { fatal: new Error("Consulta rechazada por OpenStreetMap: " + (txt.match(/Error<\/strong>:([^<]+)/) || [, "error 400"])[1].trim()) }); }
+    if (!r.ok) throw fail(`error ${r.status}`);
+    let j; try { j = JSON.parse(txt); } catch (_) { throw fail("respuesta no válida", { retry: true }); }
+    if (j.remark && /error|timed out|out of memory/i.test(j.remark) && !(j.elements || []).length) throw fail(j.remark.slice(0, 120), { retry: true });
+    return j;
+  };
   let errors = [], netFails = 0;
   for (let round = 0; round < 3; round++) {
     if (round) for (let i = round * 15; i > 0; i--) { stop(); say(`Todos los servidores de mapas están ocupados. Reintento ${round} de 2 en ${i} s`); await sleep(1000); }
     errors = []; netFails = 0; let retry = false;
-    for (const ep of eps) {
+    for (let g = 0; g < eps.length; g += 2) {
       stop();
-      const host = new URL(ep).host, t0 = Date.now();
-      say(`Conectando con ${host}`);
-      const tick = setInterval(() => say(`Esperando respuesta de ${host}… ${Math.round((Date.now() - t0) / 1000)} s`), 1000);
-      const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), (timeoutS + 15) * 1000);
-      S._abort = ctrl;
+      const group = eps.slice(g, g + 2), ctrls = group.map(() => new AbortController()), t0 = Date.now();
+      S._abort = { abort: () => ctrls.forEach(c => c.abort()) };
+      const hosts = group.map(e => new URL(e).host.replace(/^(overpass[.-]|maps\.)/, "")).join(" y ");
+      say(`Consultando ${hosts}`);
+      const tick = setInterval(() => say(`Esperando respuesta de ${hosts}… ${Math.round((Date.now() - t0) / 1000)} s`), 1000);
+      const timer = setTimeout(() => ctrls.forEach(c => c.abort()), (timeoutS + 15) * 1000);
       try {
-        const r = await fetch(ep, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" }, body: "data=" + encodeURIComponent(query), signal: ctrl.signal });
-        const txt = await r.text();
-        if (r.status === 429 || r.status === 504 || r.status === 503) { errors.push(`${host}: ${r.status === 429 ? "pide esperar" : "saturado"}`); retry = true; continue; }
-        if (!r.ok) { errors.push(`${host}: error ${r.status}`); if (r.status === 400) { console.error(query, txt); throw new Error("Consulta rechazada por OpenStreetMap: " + (txt.match(/Error<\/strong>:([^<]+)/) || [, "error 400"])[1].trim()); } continue; }
-        let j; try { j = JSON.parse(txt); } catch (_) { errors.push(`${host}: respuesta no válida`); retry = true; continue; }
-        if (j.remark && /error|timed out|out of memory/i.test(j.remark) && !(j.elements || []).length) { errors.push(`${host}: ${j.remark.slice(0, 120)}`); retry = true; continue; }
-        S._ovGood = ep; return j;
-      } catch (e) {
+        return await Promise.any(group.map((ep, i) => tryOne(ep, ctrls[i]).then(j => { S._ovGood = ep; ctrls.forEach((c, k) => k !== i && c.abort()); return j; })));
+      } catch (agg) {
         stop();
-        if (/rechazada/.test(e.message)) throw e;
-        // Un servidor saturado a veces responde sin cabeceras CORS y el navegador lo ve como "sin conexión"
-        if (e.name === "AbortError") errors.push(`${host}: tiempo agotado`); else { netFails++; errors.push(`${host}: sin conexión`); }
-        retry = true;
-      } finally { clearInterval(tick); clearTimeout(t); }
+        for (const e of agg.errors || [agg]) { if (e.fatal) throw e.fatal; errors.push(e.message); if (e.net) netFails++; if (e.retry) retry = true; }
+      } finally { clearInterval(tick); clearTimeout(timer); }
     }
     if (netFails === eps.length) break; // ningún servidor alcanzable: la red del usuario lo bloquea
     if (!retry) break;
@@ -1877,27 +2017,33 @@ function osmToResult(el, municipality, province) {
     lat: el.lat ?? el.center?.lat ?? null, lon: el.lon ?? el.center?.lon ?? null
   };
 }
-async function osmSearch(provName, cats, onStep) {
+async function osmSearch(provName, cats, onStep, muni) {
   const prov = provByName(provName); if (!prov) throw new Error("Provincia no válida");
-  const key = "s2-" + prov.name + "-" + [...cats].sort().join(",");
-  const hit = await Store.cacheGet(key, DAYMS); if (hit) return hit;
-  const sel = cats.map(c => `nwr(area.p)${CATS[c].q}["name"];`).join("");
-  onStep(`Descargando locales de ${prov.name} (en provincias grandes tarda hasta 1-2 minutos)`);
+  const cs = [...cats].sort().join(","), key = "s2-" + prov.name + "-" + cs;
+  const hit = await Store.cacheGet(key, DAYMS); if (hit) return { list: hit };
+  const areas = prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("");
+  const sel = a => cats.map(c => `nwr(area.${a})${CATS[c].q}["name"];`).join("");
+  const pack = (els, m) => { const seen = new Set(), out = []; for (const el of els || []) { if (!el.tags?.name || el.tags.boundary) continue; const id = el.type + "/" + el.id; if (seen.has(id)) continue; seen.add(id); out.push(osmToResult(el, m, prov.name)); } return out; };
+  // Solo un municipio: se descarga únicamente ese término municipal
+  if (muni) {
+    const mk = "s3-" + prov.name + "-" + norm(muni) + "-" + cs, mh = await Store.cacheGet(mk, DAYMS); if (mh) return { list: mh, muni: true };
+    onStep(`Descargando locales de ${muni}`);
+    const j = await overpass(`[out:json][timeout:60];(${areas})->.p;rel(area.p)["boundary"="administrative"]["admin_level"="8"]["name"~"^${reEsc(muni)}$",i]->.r;.r out tags;.r map_to_area->.m;(${sel("m")});out center tags qt;`, 60, onStep);
+    const rel = (j.elements || []).find(e => e.type === "relation" && e.tags?.boundary);
+    if (rel) { const out = pack(j.elements, rel.tags.name); if (out.length) await Store.cacheSet(mk, out); return { list: out, muni: true, muniName: rel.tags.name }; }
+    onStep(`No encuentro el municipio "${muni}"; busco en toda la provincia`);
+  }
+  onStep(`Descargando locales de ${prov.name} (en provincias grandes tarda hasta 1 minuto)`);
   // Plan A: el área de la provincia por su código oficial (p. ej. ES-OR)
-  let j = await overpass(`[out:json][timeout:90];(${prov.iso.map(c => `area["ISO3166-2"="${c}"];`).join("")})->.p;(${sel});out center tags;`, 90, onStep);
+  let j = await overpass(`[out:json][timeout:90];(${areas})->.p;(${sel("p")});out center tags qt;`, 90, onStep);
   // Plan B: por el nombre de la provincia
   if (!(j.elements || []).length) {
     onStep(`Probando por el nombre de la provincia`);
-    j = await overpass(`[out:json][timeout:90];area["ISO3166-1"="ES"]["admin_level"="2"]->.es;rel(area.es)["boundary"="administrative"]["admin_level"~"^(4|6)$"]["name"~"${prov.rx}",i];map_to_area->.p;(${sel});out center tags;`, 90, onStep);
+    j = await overpass(`[out:json][timeout:90];area["ISO3166-1"="ES"]["admin_level"="2"]->.es;rel(area.es)["boundary"="administrative"]["admin_level"~"^(4|6)$"]["name"~"${prov.rx}",i];map_to_area->.p;(${sel("p")});out center tags qt;`, 90, onStep);
   }
-  const seen = new Set(), out = [];
-  for (const el of j.elements || []) {
-    if (!el.tags?.name) continue;
-    const id = el.type + "/" + el.id; if (seen.has(id)) continue; seen.add(id);
-    out.push(osmToResult(el, null, prov.name));
-  }
+  const out = pack(j.elements, null);
   if (out.length) await Store.cacheSet(key, out);
-  return out;
+  return { list: out };
 }
 // Asigna el municipio a cada local (en segundo plano, después de mostrar los resultados)
 async function assignMunicipalities(provName, list) {
@@ -1926,8 +2072,8 @@ async function assignMunicipalities(provName, list) {
 const rKey = r => r.osmId;
 function resultToCompany(r) {
   const T = todayISO(); const c = { f: {}, ext: { osmId: r.osmId, osmUrl: r.osmUrl } };
-  for (const [k, v] of Object.entries({ name: r.name, address: r.address, municipality: r.municipality, province: r.province, phone: r.phone, email: r.email, web: r.web, instagram: r.instagram, social: r.social, sector: r.sector, hours: r.hours, services: r.services, brand: r.brand }))
-    if (v !== null && v !== undefined && v !== "") c.f[k] = { v, src: "api", origin: "OpenStreetMap", at: T };
+  for (const [k, v] of Object.entries({ name: r.name, cif: r.cif, address: r.address, municipality: r.municipality, province: r.province, phone: r.phone, email: r.email, web: r.web, instagram: r.instagram, social: r.social, sector: r.sector, hours: r.hours, services: r.services, brand: r.brand }))
+    if (v !== null && v !== undefined && v !== "") c.f[k] = { v, src: r.srcs?.[k] || "api", origin: r.org?.[k] || "OpenStreetMap", at: T };
   return c;
 }
 function resultScore(r) {
@@ -1947,16 +2093,23 @@ function buildDupIndex() {
   DUPIDX = m;
 }
 function dupOf(r) { const I = DUPIDX; if (!I) return null; const ph = digits(r.phone), d = domainOf(r.web); return I.get("o:" + r.osmId) || (ph.length === 9 && I.get("p:" + ph)) || (d && I.get("w:" + d)) || I.get("n:" + norm(r.name) + "|" + norm(r.municipality)) || null; }
+const ONLY_FILTERS = [
+  ["email", "Con email", r => !!r.email], ["phone", "Con teléfono", r => !!r.phone], ["web", "Con web", r => !!r.web],
+  ["insta", "Con Instagram", r => !!r.instagram], ["social", "Con redes sociales", r => !!(r.instagram || r.social)],
+  ["contact", "Con email o teléfono", r => !!(r.email || r.phone)], ["noweb", "Sin web", r => !r.web],
+  ["indep", "Sin cadena", r => !r.brand], ["terraza", "Con terraza", r => /terraza/i.test(r.services || "")],
+  ["daily", "Abre 6-7 días", r => { const d = r.hours ? daysOpen(r.hours) : null; return d !== null && d >= 6; }]
+];
 function visibleResults() {
-  const s = S.search, F = s.form; buildDupIndex();
+  const s = S.search, F = s.form; buildDupIndex(); s.only ||= [];
   let list = s.results.map(r => ({ r, dup: dupOf(r), sc: resultScore(r) }));
-  if (F.omun) { const m = norm(F.omun); list = list.filter(x => norm(x.r.municipality) === m); }
+  if (F.omun) { const m = norm(F.omun); list = list.filter(x => norm(x.r.municipality).includes(m)); }
   if (s.sectorF) list = list.filter(x => x.r.kind === s.sectorF);
   if (s.q) { const q = norm(s.q); list = list.filter(({ r }) => norm([r.name, r.municipality, r.address, r.sector].join(" ")).includes(q)); }
-  if (F.needPhone) list = list.filter(x => x.r.phone || x.r.email);
-  if (F.needWeb) list = list.filter(x => x.r.web);
   if (s.minScore) list = list.filter(x => (x.sc.score ?? 0) >= +s.minScore);
   if (s.hideDup) list = list.filter(x => !x.dup);
+  s._onlyN = Object.fromEntries(ONLY_FILTERS.map(([k, , fn]) => [k, list.filter(x => fn(x.r)).length]));
+  for (const [k, , fn] of ONLY_FILTERS) if (s.only.includes(k)) list = list.filter(x => fn(x.r));
   const by = s.sortBy;
   list.sort((a, b) => by === "name" ? (a.r.name || "").localeCompare(b.r.name || "", "es") : by === "muni" ? (a.r.municipality || "~").localeCompare(b.r.municipality || "~", "es") : (b.sc.score ?? -1) - (a.sc.score ?? -1));
   return list;
@@ -1977,7 +2130,7 @@ VIEWS.buscar = () => {
       <div class="field"><span class="lbl">Tipo de negocio</span><div class="row">${Object.entries(CATS).map(([k, c]) => `<button class="chip ${F.cats.includes(k) ? "on" : ""}" data-act="cat" data-k="${k}" aria-pressed="${F.cats.includes(k)}">${esc(c.label)}</button>`).join("")}</div></div>
       <div class="grid-form" style="margin-top:14px">
         <div class="field"><label for="sf-oprov">Provincia</label><select class="select" id="sf-oprov" data-sf="oprov"><option value="" ${!F.oprov ? "selected" : ""}>Elige una provincia…</option>${provinces().map(p => `<option ${F.oprov === p ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></div>
-        <div class="field"><label for="sf-omun">Municipio (opcional)</label>${Array.isArray(ml) ? `<select class="select" id="sf-omun" data-sf="omun"><option value="">Toda la provincia</option>${ml.map(m => `<option ${F.omun === m ? "selected" : ""}>${esc(m)}</option>`).join("")}</select>` : `<input class="input" id="sf-omun" disabled placeholder="${F.oprov ? "Disponible tras buscar" : "Elige antes la provincia"}">`}</div>
+        <div class="field"><label for="sf-omun">Municipio <span class="muted small" style="font-weight:400">(opcional, mucho más rápido)</span></label><input class="input" id="sf-omun" data-sf="omun" list="dl-munis" value="${esc(F.omun || "")}" ${F.oprov ? "" : "disabled"} placeholder="${F.oprov ? "Toda la provincia" : "Elige antes la provincia"}" autocomplete="off"><datalist id="dl-munis">${(ml || []).map(m => `<option value="${esc(m)}">`).join("")}</datalist></div>
       </div>
       <div class="row" style="margin-top:14px">${s.running ? `<button class="btn danger" data-act="stop-search">${ico("x")}<span>Detener</span></button>` : `<button class="btn primary" data-act="run-search" ${F.oprov && F.cats.length ? "" : "disabled"}>${ico("search")}<span>Buscar locales</span></button>`}
         ${s.results.length && !s.running ? `<button class="btn ghost" data-act="clear-results">Limpiar resultados</button>` : ""}
@@ -1992,9 +2145,10 @@ VIEWS.buscar = () => {
       <select class="select" data-act="r-sort" aria-label="Ordenar"><option value="score" ${s.sortBy === "score" ? "selected" : ""}>Mayor encaje primero</option><option value="name" ${s.sortBy === "name" ? "selected" : ""}>Nombre A-Z</option><option value="muni" ${s.sortBy === "muni" ? "selected" : ""}>Municipio</option></select>
       <select class="select" data-act="r-min" aria-label="Encaje mínimo"><option value="">Cualquier encaje</option>${[50, 60, 70, 80].map(n => `<option value="${n}" ${String(s.minScore) === String(n) ? "selected" : ""}>Encaje ${n} o más</option>`).join("")}</select>
     </div>
+    <div class="only-bar"><span class="lbl">Mostrar solo</span><div class="chips" style="margin:0">${ONLY_FILTERS.map(([k, l]) => { const on = (s.only || []).includes(k); return `<button class="chip ${on ? "on" : ""}" data-act="r-only" data-k="${k}" aria-pressed="${on}">${on ? ico("check") : ""}${l} <b>${nf.format(s._onlyN?.[k] ?? 0)}</b></button>`; }).join("")}${(s.only || []).length ? `<button class="chip" data-act="r-only-clear">${ico("x")}Quitar</button>` : ""}</div></div>
+    <div class="enr-bar">${S.enr?.running ? `<div style="flex:1;min-width:0"><div class="progress"><i style="width:${Math.round(S.enr.done / Math.max(1, S.enr.total) * 100)}%"></i></div><div class="small muted">Buscando contactos en internet: ${nf.format(S.enr.done)} de ${nf.format(S.enr.total)} · ${nf.format(S.enr.found)} con datos nuevos</div></div><button class="btn sm danger" data-act="enr-stop">${ico("x")}<span>Detener</span></button>`
+      : `<button class="btn" data-act="enr-visible">${ico("globe")}<span>Buscar emails y webs en internet (${nf.format(list.filter(x => !x.r.enrich).length)})</span></button><span class="small muted">${S.enr?.msg ? esc(S.enr.msg) : "Lee la web de cada local, su página de contacto y su aviso legal; si no tiene web, la busca."}</span>`}</div>
     <div class="r-bar" style="margin-top:0">
-      <label class="chk-row"><input type="checkbox" class="chk" data-sf="needPhone" ${F.needPhone ? "checked" : ""}> Con teléfono o email</label>
-      <label class="chk-row"><input type="checkbox" class="chk" data-sf="needWeb" ${F.needWeb ? "checked" : ""}> Con web</label>
       <label class="chk-row"><input type="checkbox" class="chk" data-act="r-hide" ${s.hideDup ? "checked" : ""}> Ocultar los que ya tengo</label>
       <label class="chk-row"><input type="checkbox" class="chk" data-act="r-all" ${allSel ? "checked" : ""}> Seleccionar los ${nf.format(free.length)}</label>
     </div>
@@ -2014,9 +2168,10 @@ function resultCard({ r, dup, sc }) {
       <div><strong>${esc(r.name)}</strong><span class="small muted">${esc([r.address, r.municipality].filter(Boolean).join(" · ")) || "Sin dirección publicada"}</span></div>
       ${s !== null ? `<span class="score s-${scoreCls(s)}" title="Encaje con ${esc(S.settings.service.name)}" style="min-width:auto"><span class="score-bar" style="width:40px"><i class="bg-${scoreCls(s)}" style="width:${s}%"></i></span>${s}</span>` : ""}</div>
     <div class="row" style="gap:6px"><span class="pill">${esc(r.sector)}</span>${r.brand ? `<span class="pill" style="background:var(--warm-soft);color:var(--warm)">Cadena: ${esc(r.brand)}</span>` : ""}${r.services ? `<span class="pill">${esc(r.services)}</span>` : ""}</div>
-    <div class="r-facts">${r.phone ? `<span>${ico("phone")}<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></span>` : `<span class="na">Sin teléfono publicado</span>`}${r.email ? `<span>${ico("mail")}<a href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : ""}${r.web ? `<span>${ico("globe")}<a href="${esc(urlOf(r.web))}" target="_blank" rel="noopener">${esc(domainOf(r.web))}</a></span>` : ""}${r.instagram ? `<span><a href="${esc(igUrl(r.instagram))}" target="_blank" rel="noopener">@${esc(r.instagram)}</a> (Instagram)</span>` : r.social ? `<span>Redes sociales</span>` : ""}</div>
+    <div class="r-facts">${r.phone ? `<span>${ico("phone")}<a href="tel:${esc(r.phone)}">${esc(r.phone)}</a></span>` : `<span class="na">Sin teléfono publicado</span>`}${r.email ? `<span>${ico("mail")}<a href="mailto:${esc(r.email)}">${esc(r.email)}</a></span>` : `<span class="na">Sin email</span>`}${r.web ? `<span>${ico("globe")}<a href="${esc(urlOf(r.web))}" target="_blank" rel="noopener">${esc(domainOf(r.web))}</a></span>` : ""}${r.instagram ? `<span><a href="${esc(igUrl(r.instagram))}" target="_blank" rel="noopener">@${esc(r.instagram)}</a> (Instagram)</span>` : r.social ? `<span>Redes sociales</span>` : ""}</div>
     ${sc.top ? `<div class="small" style="color:var(--ink-2)"><b style="color:var(--ink)">Oportunidad:</b> ${esc(sc.top)}.</div>` : ""}
-    <div class="row"><button class="btn sm primary" data-act="r-mail" data-k="${esc(k)}">${ico("mail")}<span>Enviar correo por Gmail</span></button><button class="btn sm" data-act="r-compose" data-k="${esc(k)}">${ico("edit")}<span>Revisar</span></button></div>
+    ${r.enrich ? `<div class="small ${r.enrich.n ? "enr-ok" : "muted"}">${r.enrich.n ? `${ico("check")} Datos encontrados en internet${r.enrich.emails.length > 1 ? ` · también: ${esc(r.enrich.emails.slice(1, 3).join(", "))}` : ""}` : "Sin datos nuevos en internet"}</div>` : ""}
+    <div class="row"><button class="btn sm primary" data-act="r-mail" data-k="${esc(k)}">${ico("mail")}<span>Enviar correo por Gmail</span></button><button class="btn sm" data-act="r-compose" data-k="${esc(k)}">${ico("edit")}<span>Revisar</span></button>${!r.enrich ? `<button class="btn sm" data-act="r-enrich" data-k="${esc(k)}">${ico("globe")}<span>Buscar contacto</span></button>` : ""}</div>
     <div class="row" style="justify-content:space-between">${dup ? `<button class="btn sm" data-open="${dup.id}">Ya en tu base: abrir</button>` : `<span class="small muted">${r.hours ? "Horario publicado" : ""}</span>`}<span class="row" style="gap:12px"><a class="small" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([r.name, r.address, r.municipality || r.province].filter(Boolean).join(", "))}" target="_blank" rel="noopener" title="Abre la búsqueda en Google Maps para ver teléfono, reseñas y fotos">Google Maps</a><a class="small" href="${esc(r.osmUrl)}" target="_blank" rel="noopener">Mapa</a></span></div>
   </article>`;
 }
@@ -2035,9 +2190,14 @@ async function runOsm() {
     if (wait) { s.label = t; const el = $(".progress + [role=status]"); if (el) { el.textContent = t; return; } return render(); }
     s.label = t + "…"; s.done = Math.min(90, s.done + 20); render();
   };
-  try { s.results = await osmSearch(F.oprov, F.cats, step); }
+  let res;
+  try { res = await osmSearch(F.oprov, F.cats, step, (F.omun || "").trim()); s.results = res.list; }
   catch (e) { if (!s.cancel) s.errors.push(e.message); return; }
   if (!s.results.length) return;
+  if (res.muni) { // ya vienen con su municipio
+    if (res.muniName) F.omun = res.muniName;
+    s.running = false; s.label = `${nf.format(s.results.length)} locales encontrados en ${F.omun}.`; s.results.forEach(r => { r._rev = -1; }); return render();
+  }
   s.running = false; s.label = `${nf.format(s.results.length)} locales encontrados en ${F.oprov}. Asignando municipios…`; render();
   try { await assignMunicipalities(F.oprov, s.results); s.label = `${nf.format(s.results.length)} locales encontrados en ${F.oprov}.`; }
   catch (e) { s.label = `${nf.format(s.results.length)} locales encontrados en ${F.oprov}. No se pudieron cargar los municipios; se muestra la ciudad de la dirección cuando existe.`; S.search.munis[F.oprov] = [...new Set(s.results.map(r => r.municipality).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es")); }
@@ -2046,6 +2206,11 @@ async function runOsm() {
 }
 const SEARCH_ACTIONS = {
   "cat": a => { const F = S.search.form, k = a.dataset.k; F.cats = F.cats.includes(k) ? F.cats.filter(x => x !== k) : [...F.cats, k]; render(); },
+  "r-only": a => { const s = S.search, k = a.dataset.k; s.only ||= []; s.only = s.only.includes(k) ? s.only.filter(x => x !== k) : [...s.only, k]; s.show = 120; render(); },
+  "r-only-clear": () => { S.search.only = []; render(); },
+  "enr-visible": () => enrichMany(visibleResults().map(x => x.r)),
+  "enr-stop": () => { if (S.enr) S.enr.cancel = true; },
+  "r-enrich": async a => { const r = S.search.results.find(x => rKey(x) === a.dataset.k); if (!r) return; a.disabled = true; a.querySelector("span").textContent = "Buscando…"; const n = await enrichResult(r); r._rev = -1; toast(n ? "Datos nuevos encontrados en internet" : "No se ha encontrado nada nuevo"); render(); },
   "sector-f": a => { S.search.sectorF = a.dataset.k; S.search.show = 120; render(); },
   "run-search": async () => {
     const s = S.search; if (s.running) return;
@@ -2172,6 +2337,7 @@ document.addEventListener("click", async e => {
       case "new-company": return companyForm(null);
       case "edit-company": return companyForm(c);
       case "import": return pickImport();
+      case "f-has": { const k = a.dataset.k, h = S.filters.has || []; S.filters.has = h.includes(k) ? h.filter(x => x !== k) : [...h, k]; S.page = 1; S.activeSearch = null; return render(); }
       case "toggle-filters": S.showFilters = !S.showFilters; return render();
       case "clear-filters": S.filters = {}; S.activeSearch = null; S.page = 1; return render();
       case "more": S.page++; return render();
@@ -2193,6 +2359,7 @@ document.addEventListener("click", async e => {
       case "delete-company": return confirmModal("Eliminar empresa", `Se eliminará <b>${esc(val(c, "name"))}</b> con todo su historial.`, "delete-company-ok");
       case "delete-company-ok": closeModal(); Store.deleteCompany(S.openId); toast("Empresa eliminada"); return closeDrawer();
       case "refresh-api": return refreshFromApi(c);
+      case "web-enrich": a.disabled = true; return enrichCompany(c);
       case "done": return doneForm(c);
       case "compose": return composeForm(c);
       case "mail-copy": return sendMail("copy");
@@ -2275,7 +2442,7 @@ document.addEventListener("change", e => {
   if (t.matches('[data-act="sort-mobile"]')) { S.sort.key = t.value; return render(); }
   if (t.matches('[data-act="bulk-status"]') && t.value) { const L = selectedList(); L.forEach(c => setStatus(c, t.value)); toast(`${L.length} empresas actualizadas`); return render(); }
   if (t.matches('[data-act="bulk-tag"]') && t.value) { const L = selectedList(); L.forEach(c => { c.crm.tags = [...new Set([...(c.crm.tags || []), t.value])]; Store.saveCompany(c); }); toast(`Etiqueta añadida a ${L.length} empresas`); return render(); }
-  if (t.matches("[data-sf]")) { S.search.form[t.dataset.sf] = t.type === "checkbox" ? t.checked : t.value; if (["oprov", "omun", "needPhone", "needWeb"].includes(t.dataset.sf)) render(); return; }
+  if (t.matches("[data-sf]")) { if (t.dataset.sf === "oprov") S.search.form.omun = ""; S.search.form[t.dataset.sf] = t.type === "checkbox" ? t.checked : t.value.trim(); if (t.dataset.sf === "oprov") render(); return; }
   if (t.matches('[data-act="r-sel"]')) { const k = t.dataset.k; t.checked ? S.search.sel.add(k) : S.search.sel.delete(k); return render(); }
   if (t.matches('[data-act="r-status"]')) { S.search.assign = t.value; return; }
   if (t.matches('[data-act="r-hide"]')) { S.search.hideDup = t.checked; return render(); }
@@ -2290,6 +2457,11 @@ document.addEventListener("change", e => {
 let qTimer;
 document.addEventListener("input", e => {
   if (["te-subj", "te-body", "te-tone", "te-use"].includes(e.target.id)) { clearTimeout(S._teT); S._teT = setTimeout(tePreview, 120); return; }
+  if (e.target.id === "sf-omun") { // el municipio filtra al escribir; no se redibuja al salir del campo (eso se comía el clic en Buscar)
+    clearTimeout(qTimer); const el = e.target; S.search.form.omun = el.value.trim();
+    if (S.search.results.length && !S.search.running) qTimer = setTimeout(() => { const pos = el.selectionStart; render(); const n = $("#sf-omun"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } }, 300);
+    return;
+  }
   if (e.target.id === "rq") { clearTimeout(qTimer); const el = e.target; qTimer = setTimeout(() => { S.search.q = el.value; const pos = el.selectionStart; render(); const n = $("#rq"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } }, 200); return; }
   if (e.target.id === "q") { clearTimeout(qTimer); const el = e.target; qTimer = setTimeout(() => { applyFilterInput(el); const pos = el.selectionStart; render(); const n = $("#q"); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {} } }, 220); }
 });
